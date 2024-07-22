@@ -14,8 +14,8 @@ async def get_conversation(user_id: int):
     try:
         conversation = await collection.find_one({"user_id": user_id})
         if not conversation:
-            conversation = {"user_id": user_id, "messages": []}
-        return conversation
+            return False, {"user_id": user_id, "messages": []}
+        return True, conversation
     except Exception as e:
         print(f"Error fetching conversation for user_id {user_id}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error while fetching conversation.")
