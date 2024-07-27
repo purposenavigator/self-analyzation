@@ -1,13 +1,12 @@
 # main.py
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
 from typing import List
 import os
 from openai import AsyncOpenAI
 from dotenv import load_dotenv
-from mongodb import get_conversation, update_conversation
+from mongodb import get_conversation, get_next_id, update_conversation
 from questions import create_system_role, get_system_role
-import questions
+from type import GPTRequest, Query
 
 load_dotenv()
 
@@ -17,12 +16,6 @@ client = AsyncOpenAI(
 
 app = FastAPI()
 
-class GPTRequest(BaseModel):
-    user_id: int
-    prompt: str
-    topic: str
-    max_tokens: int = 150
-
 @app.post("/generate")
 async def generate_text(request: GPTRequest):
     try:
@@ -30,10 +23,13 @@ async def generate_text(request: GPTRequest):
         content = get_system_role(topic)
 
         # Fetch the existing conversation from MongoDB
-        found, conversation = await get_conversation(request.user_id)
-        if not found:
+        query = Query(user_id=request.user_id, conversation_id=request.conversation_id)
+        conversation_id = request.conversation_id
+        _, conversation = await get_conversation(query)
+        if not conversation_id:
             system_role = {"role": "system", "content": content}
             conversation["messages"].append(system_role)
+            conversation_id = await get_next_id("conversation_id")  
 
         # Add the user's request to the conversation
         conversation["messages"].append({"role": "user", "content": request.prompt})
@@ -51,7 +47,7 @@ async def generate_text(request: GPTRequest):
         # Save the updated conversation back to MongoDB
         await update_conversation(request.user_id, conversation)
         
-        return {"response": ai_response}
+        return {"response": ai_response, "conversation_id":conversation_id }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
