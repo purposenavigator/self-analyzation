@@ -1,12 +1,11 @@
 # main.py
 from fastapi import FastAPI, HTTPException
-from typing import List
 import os
 from openai import AsyncOpenAI
 from dotenv import load_dotenv
+from models import GPTRequest, Query
 from mongodb import get_conversation, get_next_id, update_conversation
-from questions import create_system_role, get_system_role
-from type import GPTRequest, Query, UserConversation
+from questions import  get_system_role
 
 load_dotenv()
 

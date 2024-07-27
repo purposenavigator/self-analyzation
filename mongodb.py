@@ -7,7 +7,9 @@ from pymongo.errors import DuplicateKeyError
 from pymongo import ReturnDocument
 from dotenv import load_dotenv
 
-from type import Conversation, Query, UserConversation
+from models import Query, UserConversation
+from type import Conversation
+
 
 load_dotenv()
 
