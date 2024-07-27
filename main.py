@@ -6,7 +6,7 @@ from openai import AsyncOpenAI
 from dotenv import load_dotenv
 from mongodb import get_conversation, get_next_id, update_conversation
 from questions import create_system_role, get_system_role
-from type import GPTRequest, Query
+from type import GPTRequest, Query, UserConversation
 
 load_dotenv()
 
@@ -25,7 +25,7 @@ async def generate_text(request: GPTRequest):
         # Fetch the existing conversation from MongoDB
         query = Query(user_id=request.user_id, conversation_id=request.conversation_id)
         conversation_id = request.conversation_id
-        _, conversation = await get_conversation(query)
+        conversation = await get_conversation(query)
         if not conversation_id:
             system_role = {"role": "system", "content": content}
             conversation["messages"].append(system_role)
@@ -45,7 +45,8 @@ async def generate_text(request: GPTRequest):
         conversation["messages"].append({"role": "assistant", "content": ai_response})
 
         # Save the updated conversation back to MongoDB
-        await update_conversation(request.user_id, conversation)
+        user_conversation = UserConversation(request.user_id, conversation_id, conversation)
+        await update_conversation(user_conversation)
         
         return {"response": ai_response, "conversation_id":conversation_id }
     except Exception as e:

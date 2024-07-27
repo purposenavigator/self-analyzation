@@ -7,7 +7,7 @@ from pymongo.errors import DuplicateKeyError
 from pymongo import ReturnDocument
 from dotenv import load_dotenv
 
-from type import Query
+from type import Conversation, Query, UserConversation
 
 load_dotenv()
 
@@ -29,22 +29,26 @@ async def initialize_counter(sequence_name: str):
         logger.error(f"Error initializing counter for {sequence_name}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error while initializing counter.")
 
-async def get_conversation(query: Query):
+async def get_conversation(query: Query) -> Conversation:
     user_id = query.user_id
     conversation_id = query.conversation_id
     try:
         conversation = await collection.find_one({"user_id": user_id, "conversation_id": conversation_id})
         if not conversation:
-            return False, {"user_id": user_id, "messages": []}
-        return True, conversation
+            return {"user_id": user_id, "messages": []}
+        return conversation
     except Exception as e:
         logger.error(f"Error fetching conversation for user_id {user_id}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error while fetching conversation.")
 
-async def update_conversation(user_id: int, conversation):
+async def update_conversation(user_conversation: UserConversation):
+    user_id = user_conversation.user_id
+    conversation_id = user_conversation.conversation_id
+    conversation = user_conversation.conversation
+
     try:
         await collection.update_one(
-            {"user_id": user_id},
+            {"user_id": user_id, "conversation_id": conversation_id},
             {"$set": conversation},
             upsert=True
         )
