@@ -11,7 +11,7 @@ class GPTRequest(BaseModel):
     topic: str
     max_tokens: int = 150
 
-class Query:
+class ConversationQuery:
     def __init__(self, user_id: int, conversation_id: int):
         self.user_id = user_id
         self.conversation_id = conversation_id

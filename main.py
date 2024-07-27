@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException
 import os
 from openai import AsyncOpenAI
 from dotenv import load_dotenv
-from models import GPTRequest, Query
+from models import GPTRequest, ConversationQuery
 from mongodb import get_conversation, get_next_id, update_conversation
 from questions import  get_system_role
 
@@ -22,7 +22,7 @@ async def generate_text(request: GPTRequest):
         content = get_system_role(topic)
 
         # Fetch the existing conversation from MongoDB
-        query = Query(user_id=request.user_id, conversation_id=request.conversation_id)
+        query = ConversationQuery(user_id=request.user_id, conversation_id=request.conversation_id)
         conversation_id = request.conversation_id
         user_conversation = await get_conversation(query)
         if not conversation_id:

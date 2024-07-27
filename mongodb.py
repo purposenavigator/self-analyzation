@@ -7,7 +7,7 @@ from pymongo.errors import DuplicateKeyError
 from pymongo import ReturnDocument
 from dotenv import load_dotenv
 
-from models import Query, UserConversation
+from models import ConversationQuery, UserConversation
 from type import Conversation
 
 
@@ -31,7 +31,7 @@ async def initialize_counter(sequence_name: str):
         logger.error(f"Error initializing counter for {sequence_name}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error while initializing counter.")
 
-async def get_conversation(query: Query) -> UserConversation:
+async def get_conversation(query: ConversationQuery) -> UserConversation:
     user_id = query.user_id
     conversation_id = query.conversation_id
     try:
