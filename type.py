@@ -30,7 +30,7 @@ class Conversation(TypedDict):
     messages: List[Message]
 
 class UserConversation:
-    def __init__(self, user_id: int, conversation_id: int, conversation: Conversation):
+    def __init__(self, user_id: int, conversation_id: int, messages: List[Message]):
         self.user_id = user_id
         self.conversation_id = conversation_id
-        self.conversation = conversation
+        self.messages = messages

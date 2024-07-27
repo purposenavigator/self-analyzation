@@ -29,14 +29,16 @@ async def initialize_counter(sequence_name: str):
         logger.error(f"Error initializing counter for {sequence_name}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error while initializing counter.")
 
-async def get_conversation(query: Query) -> Conversation:
+async def get_conversation(query: Query) -> UserConversation:
     user_id = query.user_id
     conversation_id = query.conversation_id
     try:
-        conversation = await collection.find_one({"user_id": user_id, "conversation_id": conversation_id})
+        conversation: Conversation | None = await collection.find_one({"user_id": user_id, "conversation_id": conversation_id})
         if not conversation:
-            return {"user_id": user_id, "messages": []}
-        return conversation
+            update_conversation = UserConversation(user_id=user_id, conversation_id=conversation_id, messages=[])
+            return update_conversation
+        update_conversation = UserConversation(user_id=user_id, conversation_id=conversation_id, messages=conversation["messages"])
+        return update_conversation
     except Exception as e:
         logger.error(f"Error fetching conversation for user_id {user_id}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error while fetching conversation.")
@@ -44,12 +46,14 @@ async def get_conversation(query: Query) -> Conversation:
 async def update_conversation(user_conversation: UserConversation):
     user_id = user_conversation.user_id
     conversation_id = user_conversation.conversation_id
-    conversation = user_conversation.conversation
+    messages = user_conversation.messages
 
     try:
         await collection.update_one(
             {"user_id": user_id, "conversation_id": conversation_id},
-            {"$set": conversation},
+            {"$set": {
+                "messages": user_conversation.messages
+            }},
             upsert=True
         )
     except Exception as e:

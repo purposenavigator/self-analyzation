@@ -25,27 +25,26 @@ async def generate_text(request: GPTRequest):
         # Fetch the existing conversation from MongoDB
         query = Query(user_id=request.user_id, conversation_id=request.conversation_id)
         conversation_id = request.conversation_id
-        conversation = await get_conversation(query)
+        user_conversation = await get_conversation(query)
         if not conversation_id:
             system_role = {"role": "system", "content": content}
-            conversation["messages"].append(system_role)
+            user_conversation.messages.append(system_role)
             conversation_id = await get_next_id("conversation_id")  
+            user_conversation.conversation_id = conversation_id
 
-        # Add the user's request to the conversation
-        conversation["messages"].append({"role": "user", "content": request.prompt})
+        # Add the user's request to the user_conversation
+        user_conversation.messages.append({"role": "user", "content": request.prompt})
 
         # Call the OpenAI API
         response = await client.chat.completions.create(
-            messages=conversation["messages"],
+            messages=user_conversation.messages,
             model="gpt-4o-mini",
         )
         
         # Extract the AI's response and add it to the conversation
         ai_response = response.choices[0].message.content.strip()
-        conversation["messages"].append({"role": "assistant", "content": ai_response})
+        user_conversation.messages.append({"role": "assistant", "content": ai_response})
 
-        # Save the updated conversation back to MongoDB
-        user_conversation = UserConversation(request.user_id, conversation_id, conversation)
         await update_conversation(user_conversation)
         
         return {"response": ai_response, "conversation_id":conversation_id }
