@@ -5,7 +5,9 @@ from fastapi import HTTPException
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.errors import DuplicateKeyError
 from pymongo import ReturnDocument
+from pymongo.results import UpdateResult
 from dotenv import load_dotenv
+from bson import ObjectId
 
 from models import ConversationQuery, UserConversation
 from type import Conversation
@@ -35,7 +37,7 @@ async def get_conversation(query: ConversationQuery) -> UserConversation:
     user_id = query.user_id
     conversation_id = query.conversation_id
     try:
-        conversation: Conversation | None = await collection.find_one({"user_id": user_id, "conversation_id": conversation_id})
+        conversation: Conversation | None = await collection.find_one({ "_id": ObjectId(conversation_id)})
         if not conversation:
             update_conversation = UserConversation(
                 user_id=user_id, 
@@ -62,14 +64,22 @@ async def update_conversation(user_conversation: UserConversation):
     summaries = user_conversation.summaries
 
     try:
-        await collection.update_one(
-            {"user_id": user_id, "conversation_id": conversation_id},
+        result: UpdateResult = await collection.update_one(
+            { "_id": ObjectId(conversation_id)},
             {"$set": {
+                "user_id": user_id,
                 "questions": questions,
                 "summaries": summaries
             }},
             upsert=True
         )
+        if result.upserted_id:
+            return str(result.upserted_id)
+        else:
+            existing_document = await collection.find_one(
+                { "_id": ObjectId(conversation_id)},
+            )
+            return str(existing_document["_id"])
     except Exception as e:
         logger.error(f"Error updating conversation for user_id {user_id}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error while updating conversation.")

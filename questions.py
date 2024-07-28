@@ -4,6 +4,7 @@ from type import SystemRole, SystemRoles
 
 
 questions = {
+    "Test": "What is your favorite color?",
     "Inspiration": "Who is someone that stimulates you when you meet them? What about them stimulates you? Does it relate to your values?",
     "Influence": "Who is the person who has the most influence on you right now? What actions or words of this person affect you?",
     "Father": "What do you like and dislike about your father's way of living? Do your current values reflect your father's values? Or are they the opposite?",

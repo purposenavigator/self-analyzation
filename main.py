@@ -16,28 +16,27 @@ client = AsyncOpenAI(
 app = FastAPI()
 
 @app.post("/generate")
-async def generate_text(request: GPTRequest):
+async def process_answer_and_generate_followup(request: GPTRequest):
     try:
         topic = request.topic
         system_roles = get_system_role(topic)
 
         query = ConversationQuery(user_id=request.user_id, conversation_id=request.conversation_id)
-        conversation_id = request.conversation_id
+        first_conversation_id = request.conversation_id
         user_conversation = await get_conversation(query)
-        if not conversation_id:
+        if not first_conversation_id:
 
             question_role = system_roles["question"]
             summary_role = system_roles["summary"]
-            conversation_id = await get_next_id("conversation_id")  
 
             user_conversation.questions.append(question_role)
             user_conversation.summaries.append(summary_role)
-            user_conversation.conversation_id = conversation_id
 
         user_conversation.questions.append({"role": "user", "content": request.prompt})
         user_conversation.summaries.append({"role": "user", "content": request.prompt})
 
-        await update_conversation(user_conversation)
+        if not first_conversation_id:
+            user_conversation.conversation_id = await update_conversation(user_conversation)
 
         question_response = await client.chat.completions.create(
             messages=user_conversation.questions,
@@ -54,9 +53,13 @@ async def generate_text(request: GPTRequest):
         user_conversation.summaries.append({"role": "assistant", "content": ai_summary_response})
 
         await update_conversation(user_conversation)
+        conversation_id = user_conversation.conversation_id
         
         return {
-            "summary_response": ai_summary_response, "question_response": ai_question_response, "conversation_id":conversation_id }
+            "summary_response": ai_summary_response, 
+            "question_response": ai_question_response, 
+            "conversation_id":conversation_id 
+            }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

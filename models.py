@@ -6,7 +6,7 @@ from type import Message
 
 class GPTRequest(BaseModel):
     user_id: int
-    conversation_id: Optional[int] = None
+    conversation_id: Optional[str] = None
     prompt: str
     topic: str
     max_tokens: int = 150
@@ -22,7 +22,7 @@ class ConversationQuery:
 class UserConversation:
     def __init__(
             self, user_id: int, 
-            conversation_id: int, 
+            conversation_id: str, 
             summaries: List[Message],
             questions: List[Message],
             ):
