@@ -10,4 +10,13 @@ class Message(TypedDict):
 class Conversation(TypedDict):
     _id: NotRequired[ObjectId]
     user_id: int
-    messages: List[Message]
+    summaries: List[Message]
+    questions: List[Message]
+
+class SystemRole(TypedDict):
+    role: str
+    content: str
+
+class SystemRoles(TypedDict):
+    summary: SystemRole
+    question: SystemRole

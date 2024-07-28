@@ -19,34 +19,44 @@ app = FastAPI()
 async def generate_text(request: GPTRequest):
     try:
         topic = request.topic
-        content = get_system_role(topic)
+        system_roles = get_system_role(topic)
 
-        # Fetch the existing conversation from MongoDB
         query = ConversationQuery(user_id=request.user_id, conversation_id=request.conversation_id)
         conversation_id = request.conversation_id
         user_conversation = await get_conversation(query)
         if not conversation_id:
-            system_role = {"role": "system", "content": content}
-            user_conversation.messages.append(system_role)
+
+            question_role = system_roles["question"]
+            summary_role = system_roles["summary"]
             conversation_id = await get_next_id("conversation_id")  
+
+            user_conversation.questions.append(question_role)
+            user_conversation.summaries.append(summary_role)
             user_conversation.conversation_id = conversation_id
 
-        # Add the user's request to the user_conversation
-        user_conversation.messages.append({"role": "user", "content": request.prompt})
+        user_conversation.questions.append({"role": "user", "content": request.prompt})
+        user_conversation.summaries.append({"role": "user", "content": request.prompt})
 
-        # Call the OpenAI API
-        response = await client.chat.completions.create(
-            messages=user_conversation.messages,
+        await update_conversation(user_conversation)
+
+        question_response = await client.chat.completions.create(
+            messages=user_conversation.questions,
             model="gpt-4o-mini",
         )
-        
-        # Extract the AI's response and add it to the conversation
-        ai_response = response.choices[0].message.content.strip()
-        user_conversation.messages.append({"role": "assistant", "content": ai_response})
+        ai_question_response = question_response.choices[0].message.content.strip()
+        user_conversation.questions.append({"role": "assistant", "content": ai_question_response})
+
+        summary_response = await client.chat.completions.create(
+            messages=user_conversation.summaries,
+            model="gpt-4o-mini",
+        )
+        ai_summary_response = summary_response.choices[0].message.content.strip()
+        user_conversation.summaries.append({"role": "assistant", "content": ai_summary_response})
 
         await update_conversation(user_conversation)
         
-        return {"response": ai_response, "conversation_id":conversation_id }
+        return {
+            "summary_response": ai_summary_response, "question_response": ai_question_response, "conversation_id":conversation_id }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

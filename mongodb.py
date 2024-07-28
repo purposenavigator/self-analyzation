@@ -37,9 +37,19 @@ async def get_conversation(query: ConversationQuery) -> UserConversation:
     try:
         conversation: Conversation | None = await collection.find_one({"user_id": user_id, "conversation_id": conversation_id})
         if not conversation:
-            update_conversation = UserConversation(user_id=user_id, conversation_id=conversation_id, messages=[])
+            update_conversation = UserConversation(
+                user_id=user_id, 
+                conversation_id=conversation_id, 
+                questions=[],
+                summaries=[]
+            )
             return update_conversation
-        update_conversation = UserConversation(user_id=user_id, conversation_id=conversation_id, messages=conversation["messages"])
+        update_conversation = UserConversation(
+                user_id=user_id, 
+                conversation_id=conversation_id, 
+                questions=conversation["questions"],
+                summaries=conversation["summaries"]
+            )
         return update_conversation
     except Exception as e:
         logger.error(f"Error fetching conversation for user_id {user_id}: {e}")
@@ -48,13 +58,15 @@ async def get_conversation(query: ConversationQuery) -> UserConversation:
 async def update_conversation(user_conversation: UserConversation):
     user_id = user_conversation.user_id
     conversation_id = user_conversation.conversation_id
-    messages = user_conversation.messages
+    questions = user_conversation.questions
+    summaries = user_conversation.summaries
 
     try:
         await collection.update_one(
             {"user_id": user_id, "conversation_id": conversation_id},
             {"$set": {
-                "messages": user_conversation.messages
+                "questions": questions,
+                "summaries": summaries
             }},
             upsert=True
         )

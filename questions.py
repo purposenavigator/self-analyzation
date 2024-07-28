@@ -1,5 +1,7 @@
 from fastapi import HTTPException
 
+from type import SystemRole, SystemRoles
+
 
 questions = {
     "Inspiration": "Who is someone that stimulates you when you meet them? What about them stimulates you? Does it relate to your values?",
@@ -12,14 +14,27 @@ questions = {
     "Reflection": "(Imagine you are 80 years old and fill in the blanks) I spent too much time on □□□. I hardly spent any time on □□□. If I could turn back time, I would like to spend my time on □□□. What does that reveal about your values?"
 }
 
-def create_system_role(primary_question: str):
-    return f"You are an assistant that summarizes the user's input and asks follow-up questions to gain more information. Additionally, you must ensure that the discussion includes the primary question: '{primary_question}'"
+def create_question_system_role(primary_question: str):
+    return f"You are an assistant that asks questions to guide the user to reflect on their values. Additionally, you must ensure that the discussion includes the primary question: '{primary_question}'"
 
+def create_summary_system_role(primary_question: str):
+    return f"You are an assistant that summarizes the user's responses to the question: '{primary_question}'"
 
 def check_topic(topic: str):
     if topic not in questions:
         raise HTTPException(status_code=400, detail=f"Invalid topic: {topic}")
 
-def get_system_role(topic: str):
+def get_system_role(topic: str) -> SystemRoles:
     check_topic(topic)
-    return create_system_role(questions[topic])
+    question = questions[topic]
+    summary_role_content = create_summary_system_role(question)
+    question_role_content = create_question_system_role(question)
+
+    summary_role = {"role": "system", "content": summary_role_content}
+    question_role = {"role": "system", "content": question_role_content}
+
+    system_roles = {
+        "summary": summary_role,
+        "question": question_role
+    }
+    return system_roles

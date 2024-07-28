@@ -20,7 +20,13 @@ class ConversationQuery:
         return f"Query(user_id={self.user_id}, conversation_id={self.conversation_id})"
 
 class UserConversation:
-    def __init__(self, user_id: int, conversation_id: int, messages: List[Message]):
+    def __init__(
+            self, user_id: int, 
+            conversation_id: int, 
+            summaries: List[Message],
+            questions: List[Message],
+            ):
         self.user_id = user_id
         self.conversation_id = conversation_id
-        self.messages = messages
+        self.summaries = summaries
+        self.questions = questions
