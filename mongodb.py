@@ -36,12 +36,15 @@ async def initialize_counter(sequence_name: str):
 async def get_conversation(query: ConversationQuery) -> UserConversation:
     user_id = query.user_id
     conversation_id = query.conversation_id
+    topic = query.topic
+
     try:
         conversation: Conversation | None = await collection.find_one({ "_id": ObjectId(conversation_id)})
         if not conversation:
             update_conversation = UserConversation(
                 user_id=user_id, 
                 conversation_id=conversation_id, 
+                topic=topic,
                 questions=[],
                 summaries=[]
             )
@@ -49,6 +52,7 @@ async def get_conversation(query: ConversationQuery) -> UserConversation:
         update_conversation = UserConversation(
                 user_id=user_id, 
                 conversation_id=conversation_id, 
+                topic=topic,
                 questions=conversation["questions"],
                 summaries=conversation["summaries"]
             )

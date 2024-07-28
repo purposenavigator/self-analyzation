@@ -3,8 +3,8 @@ from fastapi import FastAPI, HTTPException
 import os
 from openai import AsyncOpenAI
 from dotenv import load_dotenv
-from models import GPTRequest, ConversationQuery
-from mongodb import get_conversation, get_next_id, update_conversation
+from models import GPTRequest, UserConversationQuery
+from mongodb import get_conversation, update_conversation
 from questions import  get_system_role
 
 load_dotenv()
@@ -20,9 +20,14 @@ async def process_answer_and_generate_followup(request: GPTRequest):
     try:
         topic = request.topic
         system_roles = get_system_role(topic)
-
-        query = ConversationQuery(user_id=request.user_id, conversation_id=request.conversation_id)
         first_conversation_id = request.conversation_id
+
+        query = UserConversationQuery(
+            conversation_id=first_conversation_id,
+            user_id=request.user_id,
+            topic=topic
+        )
+
         user_conversation = await get_conversation(query)
         if not first_conversation_id:
 
