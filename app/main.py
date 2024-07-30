@@ -1,8 +1,8 @@
 # main.py
 from fastapi import FastAPI
 from dotenv import load_dotenv
-from models import GPTRequest
-from resolvers import process_answer_and_generate_followup
+from app.models import GPTRequest
+from app.resolvers import process_answer_and_generate_followup
 
 load_dotenv()
 

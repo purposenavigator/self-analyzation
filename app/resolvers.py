@@ -2,16 +2,19 @@
 import os
 from fastapi import HTTPException
 from openai import AsyncOpenAI
-from models import GPTRequest, UserConversationQuery
-from mongodb import get_conversation, update_conversation
-from questions import get_system_role
-
+from app.models import GPTRequest, UserConversation, UserConversationQuery
+from app.mongodb import get_conversation, update_conversation
+from app.questions import get_system_role
+import logging
 
 client = AsyncOpenAI(
     api_key=os.environ['OPENAI_API_KEY'],  # this is also the default, it can be omitted
 )
 
-async def process_answer_and_generate_followup(request: GPTRequest):
+
+logger = logging.getLogger(__name__)
+
+async def process_conversation(request: GPTRequest) -> UserConversation:
     try:
         topic = request.topic
         system_roles = get_system_role(topic)
@@ -25,7 +28,6 @@ async def process_answer_and_generate_followup(request: GPTRequest):
 
         user_conversation = await get_conversation(query)
         if not first_conversation_id:
-
             question_role = system_roles["question"]
             summary_role = system_roles["summary"]
 
@@ -38,6 +40,13 @@ async def process_answer_and_generate_followup(request: GPTRequest):
         if not first_conversation_id:
             user_conversation.conversation_id = await update_conversation(user_conversation)
 
+        return user_conversation
+    except Exception as e:
+        logger.error(f"Error processing conversation for request {request}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error while processing conversation.")
+
+async def generate_responses(user_conversation: UserConversation):
+    try:
         question_response = await client.chat.completions.create(
             messages=user_conversation.questions,
             model="gpt-4o-mini",
@@ -53,13 +62,23 @@ async def process_answer_and_generate_followup(request: GPTRequest):
         user_conversation.summaries.append({"role": "assistant", "content": ai_summary_response})
 
         await update_conversation(user_conversation)
-        conversation_id = user_conversation.conversation_id
-        
-        return {
-            "summary_response": ai_summary_response, 
-            "question_response": ai_question_response, 
-            "conversation_id":conversation_id 
-            }
+
+        return ai_question_response, ai_summary_response
     except Exception as e:
+        logger.error(f"Error generating responses for conversation {user_conversation.conversation_id}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error while generating responses.")
+
+async def process_answer_and_generate_followup(request: GPTRequest):
+    try:
+        user_conversation = await process_conversation(request)
+        ai_question_response, ai_summary_response = await generate_responses(user_conversation)
+
+        return {
+            "summary_response": ai_summary_response,
+            "question_response": ai_question_response,
+            "conversation_id": user_conversation.conversation_id
+        }
+    except Exception as e:
+        logger.error(f"Error in process_answer_and_generate_followup for request {request}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 

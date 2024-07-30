@@ -9,8 +9,8 @@ from pymongo.results import UpdateResult
 from dotenv import load_dotenv
 from bson import ObjectId
 
-from models import UserConversation, UserConversationQuery
-from type import Conversation
+from app.models import UserConversation, UserConversationQuery
+from app.type import Conversation
 
 
 load_dotenv()

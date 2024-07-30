@@ -1,7 +1,7 @@
 from typing import List, Optional
 from pydantic import BaseModel
 
-from type import Message
+from app.type import Message
 
 
 class GPTRequest(BaseModel):

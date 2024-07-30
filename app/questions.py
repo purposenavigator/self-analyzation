@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 
-from type import SystemRole, SystemRoles
+from app.type import SystemRole, SystemRoles
 
 
 questions = {
