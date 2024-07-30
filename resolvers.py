@@ -1,0 +1,65 @@
+
+import os
+from fastapi import HTTPException
+from openai import AsyncOpenAI
+from models import GPTRequest, UserConversationQuery
+from mongodb import get_conversation, update_conversation
+from questions import get_system_role
+
+
+client = AsyncOpenAI(
+    api_key=os.environ['OPENAI_API_KEY'],  # this is also the default, it can be omitted
+)
+
+async def process_answer_and_generate_followup(request: GPTRequest):
+    try:
+        topic = request.topic
+        system_roles = get_system_role(topic)
+        first_conversation_id = request.conversation_id
+
+        query = UserConversationQuery(
+            conversation_id=first_conversation_id,
+            user_id=request.user_id,
+            topic=topic
+        )
+
+        user_conversation = await get_conversation(query)
+        if not first_conversation_id:
+
+            question_role = system_roles["question"]
+            summary_role = system_roles["summary"]
+
+            user_conversation.questions.append(question_role)
+            user_conversation.summaries.append(summary_role)
+
+        user_conversation.questions.append({"role": "user", "content": request.prompt})
+        user_conversation.summaries.append({"role": "user", "content": request.prompt})
+
+        if not first_conversation_id:
+            user_conversation.conversation_id = await update_conversation(user_conversation)
+
+        question_response = await client.chat.completions.create(
+            messages=user_conversation.questions,
+            model="gpt-4o-mini",
+        )
+        ai_question_response = question_response.choices[0].message.content.strip()
+        user_conversation.questions.append({"role": "assistant", "content": ai_question_response})
+
+        summary_response = await client.chat.completions.create(
+            messages=user_conversation.summaries,
+            model="gpt-4o-mini",
+        )
+        ai_summary_response = summary_response.choices[0].message.content.strip()
+        user_conversation.summaries.append({"role": "assistant", "content": ai_summary_response})
+
+        await update_conversation(user_conversation)
+        conversation_id = user_conversation.conversation_id
+        
+        return {
+            "summary_response": ai_summary_response, 
+            "question_response": ai_question_response, 
+            "conversation_id":conversation_id 
+            }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+

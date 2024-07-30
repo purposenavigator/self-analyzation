@@ -9,7 +9,7 @@ from pymongo.results import UpdateResult
 from dotenv import load_dotenv
 from bson import ObjectId
 
-from models import ConversationQuery, UserConversation
+from models import UserConversation, UserConversationQuery
 from type import Conversation
 
 
@@ -33,7 +33,7 @@ async def initialize_counter(sequence_name: str):
         logger.error(f"Error initializing counter for {sequence_name}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error while initializing counter.")
 
-async def get_conversation(query: ConversationQuery) -> UserConversation:
+async def get_conversation(query: UserConversationQuery) -> UserConversation:
     user_id = query.user_id
     conversation_id = query.conversation_id
     topic = query.topic
