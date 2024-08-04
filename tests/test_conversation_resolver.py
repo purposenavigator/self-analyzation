@@ -39,3 +39,23 @@ async def test_process_conversation_user_id_string(get_conversation_mock):
         await process_conversation(request)
     assert exc_info.value.status_code == 500
     assert "Internal server error while processing conversation." in str(exc_info.value.detail)
+
+@pytest.mark.asyncio
+async def test_process_conversation_invalid_topic():
+    request = GPTRequest(topic="NonExistentTopic", conversation_id=None, user_id=123, prompt="Test prompt")
+    with pytest.raises(HTTPException) as excinfo:
+        await process_conversation(request)
+    assert excinfo.value.status_code == 400
+    assert excinfo.value.detail == "Invalid topic: NonExistentTopic"
+
+@pytest.mark.asyncio
+@patch('app.resolvers.get_conversation', return_value=UserConversation(conversation_id=None, user_id=123, topic="Test", questions=[], summaries=[]))
+async def test_process_conversation_valid_topic(mock_get_conversation):
+    request = GPTRequest(topic="Test", conversation_id=None, user_id=123, prompt="Test prompt")
+    user_conversation = await process_conversation(request)
+
+    assert user_conversation.conversation_id is not None
+    assert any(q["role"] == "system" for q in user_conversation.questions)
+    assert any(s["role"] == "system" for s in user_conversation.summaries)
+    assert user_conversation.questions[-1]["content"] == request.prompt
+    assert user_conversation.summaries[-1]["content"] == request.prompt

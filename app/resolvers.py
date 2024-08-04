@@ -41,6 +41,8 @@ async def process_conversation(request: GPTRequest) -> UserConversation:
             user_conversation.conversation_id = await update_conversation(user_conversation)
 
         return user_conversation
+    except HTTPException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
     except Exception as e:
         logger.error(f"Error processing conversation for request {request}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error while processing conversation.")
