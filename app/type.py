@@ -20,3 +20,4 @@ class SystemRole(TypedDict):
 class SystemRoles(TypedDict):
     summary: SystemRole
     question: SystemRole
+    analyze: SystemRole

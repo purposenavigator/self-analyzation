@@ -30,12 +30,15 @@ async def process_conversation(request: GPTRequest) -> UserConversation:
         if not first_conversation_id:
             question_role = system_roles["question"]
             summary_role = system_roles["summary"]
+            analyzer_role = system_roles["analyze"]
 
             user_conversation.questions.append(question_role)
             user_conversation.summaries.append(summary_role)
+            user_conversation.analyze.append(analyzer_role)
 
         user_conversation.questions.append({"role": "user", "content": request.prompt})
         user_conversation.summaries.append({"role": "user", "content": request.prompt})
+        user_conversation.analyze.append({"role": "user", "content": request.prompt})
 
         if not first_conversation_id:
             user_conversation.conversation_id = await update_conversation(user_conversation)
@@ -63,9 +66,16 @@ async def generate_responses(user_conversation: UserConversation):
         ai_summary_response = summary_response.choices[0].message.content.strip()
         user_conversation.summaries.append({"role": "assistant", "content": ai_summary_response})
 
+        analyze_response = await client.chat.completions.create(
+            messages=user_conversation.analyze,
+            model="gpt-4o-mini",
+        )
+        ai_analyze_response = analyze_response.choices[0].message.content.strip()
+        user_conversation.analyze.append({"role": "assistant", "content": ai_analyze_response})
+
         await update_conversation(user_conversation)
 
-        return ai_question_response, ai_summary_response
+        return ai_question_response, ai_summary_response, ai_analyze_response
     except Exception as e:
         logger.error(f"Error generating responses for conversation {user_conversation.conversation_id}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error while generating responses.")
@@ -73,11 +83,12 @@ async def generate_responses(user_conversation: UserConversation):
 async def process_answer_and_generate_followup(request: GPTRequest):
     try:
         user_conversation = await process_conversation(request)
-        ai_question_response, ai_summary_response = await generate_responses(user_conversation)
+        ai_question_response, ai_summary_response, ai_analyze_response = await generate_responses(user_conversation)
 
         return {
             "summary_response": ai_summary_response,
             "question_response": ai_question_response,
+            "analyze_response": ai_analyze_response,
             "conversation_id": user_conversation.conversation_id
         }
     except Exception as e:

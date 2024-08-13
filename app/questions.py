@@ -1,6 +1,8 @@
 from fastapi import HTTPException
 
 from app.type import SystemRole, SystemRoles
+from app.attributes import adviser_prompts
+
 
 
 questions = {
@@ -33,9 +35,11 @@ def get_system_role(topic: str) -> SystemRoles:
 
     summary_role = {"role": "system", "content": summary_role_content}
     question_role = {"role": "system", "content": question_role_content}
+    analyze_role = {"role": "system", "content": adviser_prompts}
 
     system_roles = {
         "summary": summary_role,
-        "question": question_role
+        "question": question_role,
+        "analyze": analyze_role
     }
     return system_roles

@@ -46,7 +46,8 @@ async def get_conversation(query: UserConversationQuery) -> UserConversation:
                 conversation_id=conversation_id, 
                 topic=topic,
                 questions=[],
-                summaries=[]
+                summaries=[],
+                analyze=[]
             )
             return update_conversation
         update_conversation = UserConversation(
@@ -54,7 +55,8 @@ async def get_conversation(query: UserConversationQuery) -> UserConversation:
                 conversation_id=conversation_id, 
                 topic=topic,
                 questions=conversation["questions"],
-                summaries=conversation["summaries"]
+                summaries=conversation["summaries"],
+                analyze=conversation["analyze"]
             )
         return update_conversation
     except Exception as e:
@@ -66,6 +68,7 @@ async def update_conversation(user_conversation: UserConversation):
     conversation_id = user_conversation.conversation_id
     questions = user_conversation.questions
     summaries = user_conversation.summaries
+    analyze = user_conversation.analyze
 
     try:
         result: UpdateResult = await collection.update_one(
@@ -73,7 +76,8 @@ async def update_conversation(user_conversation: UserConversation):
             {"$set": {
                 "user_id": user_id,
                 "questions": questions,
-                "summaries": summaries
+                "summaries": summaries,
+                "analyze": analyze
             }},
             upsert=True
         )

@@ -34,9 +34,11 @@ class UserConversation:
             topic: str,
             summaries: List[Message],
             questions: List[Message],
+            analyze: List[Message],
             ):
         self.user_id = user_id
         self.conversation_id = conversation_id
         self.topic = topic
         self.summaries = summaries
         self.questions = questions
+        self.analyze = analyze
