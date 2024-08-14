@@ -12,6 +12,7 @@ class Conversation(TypedDict):
     user_id: int
     summaries: List[Message]
     questions: List[Message]
+    analyzes: List[Message]
 
 class SystemRole(TypedDict):
     role: str

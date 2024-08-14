@@ -42,3 +42,16 @@ class UserConversation:
         self.summaries = summaries
         self.questions = questions
         self.analyze = analyze
+
+class AnalayzeRequest(BaseModel):
+    conversation_id: str
+
+
+class AnalyzeQuery:
+    def __init__(self, conversation_id: str):
+        self.conversation_id = conversation_id
+
+class Analyze:
+    def __init__(self, conversation_id: str, analyze: List[Message]):
+        self.conversation_id = conversation_id
+        self.analyze = analyze

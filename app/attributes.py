@@ -114,3 +114,11 @@ When analyzing the individual's input, focus on discerning the attributes that r
 Pay attention to subtle cues and contexts that indicate what the individual genuinely considers important, rather than attributes they might mention due to societal or external influences.
 Extract and list the attributes that align with the individual's authentic values and priorities.
 """
+
+analyze_prompts = """
+Retrieve only following attributes out of the input text
+
+The below is the list of the attributes that you need to extract from the input text:
+
+Discovery, Accuracy, Achievement, Adventure, Charm, Power, Influence, Autonomy, Beauty, Victory, Challenge, Change, Comfort, Commitment, Compassion, Resistance, Helpfulness, Courtesy, Creation, Trust, Responsibility, Harmony, Excitement, Honesty, Fame, Family, Fitness, Flexibility, Forgiveness, Friendship, Fun, Generosity, Belief, Religion, Growth, Health, Cooperation, Honesty, Hope, Humility, Humor, Independence, Diligence, Peace, Intimacy, Fairness, Knowledge, Leisure, Being loved, Love, Mastery, Present, Moderation, Devotion, Rebellion, Helpfulness, Openness, Order, Passion, Joy, Popularity, Purpose, Rationality, Reality, Responsibility, Risk, Romance, Security, Acceptance, Self-control, Autonomy, Self-awareness, Devotion, Sexuality, Minimalism, Solitude, Spirituality, Stability, Tolerance, Tradition, Virtue, Wealth, Peace, Fulfillment, Truth, Dignity, Authenticity, Immersion, Effort, Conviction, Freedom, Expression, Oneness, Ingenuity, Professionalism, Flexibility, Leisure, Overcoming, Fellowship, Simplicity
+"""

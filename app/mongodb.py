@@ -9,7 +9,7 @@ from pymongo.results import UpdateResult
 from dotenv import load_dotenv
 from bson import ObjectId
 
-from app.models import UserConversation, UserConversationQuery
+from app.models import Analyze, AnalyzeQuery, UserConversation, UserConversationQuery
 from app.type import Conversation
 
 
@@ -62,6 +62,26 @@ async def get_conversation(query: UserConversationQuery) -> UserConversation:
     except Exception as e:
         logger.error(f"Error fetching conversation for user_id {user_id}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error while fetching conversation.")
+
+async def get_analyze(query: AnalyzeQuery) -> Analyze:
+    conversation_id = query.conversation_id
+    print(conversation_id)
+    print(type(conversation_id))
+
+    try:
+        conversation: Conversation | None = await collection.find_one({ "_id": ObjectId(conversation_id)})
+        if not conversation:
+            return None
+        analyze = Analyze(
+                conversation_id=conversation_id, 
+                analyze=conversation["analyze"]
+            )
+        return analyze
+    except Exception as e:
+        logger.error(f"Error fetching conversation for user_id {conversation_id}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error while fetching conversation.")
+
+
 
 async def update_conversation(user_conversation: UserConversation):
     user_id = user_conversation.user_id
