@@ -11,6 +11,15 @@ class GPTRequest(BaseModel):
     topic: str
     max_tokens: int = 150
 
+class UserConversationRequest(BaseModel):
+    user_id: int
+    conversation_id: str
+
+class SimpleConversationQuery:
+    def __init__(self, user_id: int, conversation_id: str):
+        self.user_id = user_id
+        self.conversation_id = conversation_id
+
 class UserConversationQuery:
     """
     UserConversationQuery is used to retrieve conversation history between the user and the OpenAI GPT API

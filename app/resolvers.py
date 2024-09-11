@@ -2,8 +2,8 @@
 import os
 from fastapi import HTTPException
 from openai import AsyncOpenAI
-from app.models import AnalayzeRequest, AnalyzeQuery, GPTRequest, UserConversation, UserConversationQuery
-from app.mongodb import get_analyze, get_conversation, update_conversation
+from app.models import AnalayzeRequest, AnalyzeQuery, GPTRequest, SimpleConversationQuery, UserConversation, UserConversationQuery, UserConversationRequest
+from app.mongodb import get_analyze, get_conversation, init_or_get_conversation, update_conversation
 from app.questions import get_system_role
 import logging
 
@@ -26,7 +26,7 @@ async def process_conversation(request: GPTRequest) -> UserConversation:
             topic=topic
         )
 
-        user_conversation = await get_conversation(query)
+        user_conversation = await init_or_get_conversation(query)
         if not first_conversation_id:
             question_role = system_roles["question"]
             summary_role = system_roles["summary"]
@@ -93,6 +93,17 @@ async def process_answer_and_generate_followup(request: GPTRequest):
         }
     except Exception as e:
         logger.error(f"Error in process_answer_and_generate_followup for request {request}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+async def get_conversation_resolver(request: UserConversationRequest):
+    try:
+        conversation_id = request.conversation_id
+        user_id = request.user_id
+        query = SimpleConversationQuery(conversation_id=conversation_id, user_id=user_id)
+        user_conversation = await get_conversation(query)
+        return user_conversation
+    except Exception as e:
+        logger.error(f"Error in get_conversation for request {request}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 async def process_answer(request: AnalayzeRequest):

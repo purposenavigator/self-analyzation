@@ -9,7 +9,7 @@ from pymongo.results import UpdateResult
 from dotenv import load_dotenv
 from bson import ObjectId
 
-from app.models import Analyze, AnalyzeQuery, UserConversation, UserConversationQuery
+from app.models import Analyze, AnalyzeQuery, SimpleConversationQuery, UserConversation, UserConversationQuery
 from app.type import Conversation
 
 
@@ -33,7 +33,28 @@ async def initialize_counter(sequence_name: str):
         logger.error(f"Error initializing counter for {sequence_name}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error while initializing counter.")
 
-async def get_conversation(query: UserConversationQuery) -> UserConversation:
+async def get_conversation(query: SimpleConversationQuery) -> UserConversation:
+    user_id = query.user_id
+    conversation_id = query.conversation_id
+
+    try:
+        conversation: Conversation | None = await collection.find_one({ "_id": ObjectId(conversation_id)})
+        if not conversation:
+            return None
+        user_conversation = UserConversation(
+                user_id=user_id, 
+                conversation_id=conversation_id, 
+                topic='topic here',
+                questions=conversation["questions"],
+                summaries=conversation["summaries"],
+                analyze=conversation["analyze"]
+            )
+        return user_conversation
+    except Exception as e:
+        logger.error(f"Error fetching conversation for user_id {user_id}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error while fetching conversation.")
+
+async def init_or_get_conversation(query: UserConversationQuery) -> UserConversation:
     user_id = query.user_id
     conversation_id = query.conversation_id
     topic = query.topic
@@ -65,8 +86,6 @@ async def get_conversation(query: UserConversationQuery) -> UserConversation:
 
 async def get_analyze(query: AnalyzeQuery) -> Analyze:
     conversation_id = query.conversation_id
-    print(conversation_id)
-    print(type(conversation_id))
 
     try:
         conversation: Conversation | None = await collection.find_one({ "_id": ObjectId(conversation_id)})
