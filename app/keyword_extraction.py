@@ -122,3 +122,32 @@ The below is the list of the attributes that you need to extract from the input 
 
 Discovery, Accuracy, Achievement, Adventure, Charm, Power, Influence, Autonomy, Beauty, Victory, Challenge, Change, Comfort, Commitment, Compassion, Resistance, Helpfulness, Courtesy, Creation, Trust, Responsibility, Harmony, Excitement, Honesty, Fame, Family, Fitness, Flexibility, Forgiveness, Friendship, Fun, Generosity, Belief, Religion, Growth, Health, Cooperation, Honesty, Hope, Humility, Humor, Independence, Diligence, Peace, Intimacy, Fairness, Knowledge, Leisure, Being loved, Love, Mastery, Present, Moderation, Devotion, Rebellion, Helpfulness, Openness, Order, Passion, Joy, Popularity, Purpose, Rationality, Reality, Responsibility, Risk, Romance, Security, Acceptance, Self-control, Autonomy, Self-awareness, Devotion, Sexuality, Minimalism, Solitude, Spirituality, Stability, Tolerance, Tradition, Virtue, Wealth, Peace, Fulfillment, Truth, Dignity, Authenticity, Immersion, Effort, Conviction, Freedom, Expression, Oneness, Ingenuity, Professionalism, Flexibility, Leisure, Overcoming, Fellowship, Simplicity
 """
+
+from typing import List, Dict
+from app.openai_client import client
+
+
+def generate_keyword_extraction_prompts(analyze: List[str]) -> List[Dict[str, str]]:
+    extract_prompts = """
+    Extract only the keywords that represent the most important traits, values, or actions of the subject from the following text. Show only the keywords, without additional context or sentences.
+    """
+    
+    return [
+        {
+            "role": "system",
+            "content": f"{extract_prompts}\n\nText: {sentence}"
+        }
+        for sentence in analyze
+    ]
+
+async def fetch_keywords_from_api(extract_roles: List[Dict[str, str]]):
+    responses = []
+    
+    for extract_role in extract_roles:
+        response = await client.chat.completions.create(
+            messages=[extract_role], 
+            model="gpt-4o-mini",  
+        )
+        responses.append(response)
+    
+    return responses

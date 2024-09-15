@@ -64,3 +64,15 @@ class Analyze:
     def __init__(self, conversation_id: str, analyze: List[Message]):
         self.conversation_id = conversation_id
         self.analyze = analyze
+
+class Extract:
+    def __init__(
+            self, 
+            user_id: int, 
+            conversation_id: str, 
+            extract: List[Message],
+            ):
+        self.user_id = user_id
+        self.conversation_id = conversation_id
+        self.extract = extract
+

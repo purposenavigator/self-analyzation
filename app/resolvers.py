@@ -1,15 +1,12 @@
 
-import os
 from fastapi import HTTPException
-from openai import AsyncOpenAI
+from app.keyword_extraction import fetch_keywords_from_api, generate_keyword_extraction_prompts
 from app.models import AnalayzeRequest, AnalyzeQuery, GPTRequest, SimpleConversationQuery, UserConversation, UserConversationQuery, UserConversationRequest
 from app.mongodb import get_analyze, get_conversation, init_or_get_conversation, update_conversation
 from app.questions import get_system_role
-import logging
+from app.openai_client import client
 
-client = AsyncOpenAI(
-    api_key=os.environ['OPENAI_API_KEY'],  # this is also the default, it can be omitted
-)
+import logging
 
 
 logger = logging.getLogger(__name__)
@@ -116,4 +113,19 @@ async def process_answer(request: AnalayzeRequest):
         
     except Exception as e:
         logger.error(f"Error in process_answer for request {request}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+async def process_retrieve_keywords(request: AnalayzeRequest):
+    try:
+        first_conversation_id = request.conversation_id
+        query = AnalyzeQuery(conversation_id=first_conversation_id)
+        user_conversation = await get_analyze(query)
+        analyze = [analyze['content'] for analyze in user_conversation.analyze if analyze["role"] == "assistant"]
+        prompts = generate_keyword_extraction_prompts(analyze)
+        responses = await fetch_keywords_from_api(prompts)
+        messages = [response.choices[0].message.content.strip() for response in responses]
+        return messages
+        
+    except Exception as e:
+        logger.error(f"Error in process_retrieve_keywords for request {request}: {e}")
         raise HTTPException(status_code=500, detail=str(e))

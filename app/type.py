@@ -22,3 +22,6 @@ class SystemRoles(TypedDict):
     summary: SystemRole
     question: SystemRole
     analyze: SystemRole
+
+class Excract(TypedDict):
+    extract: SystemRole

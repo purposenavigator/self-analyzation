@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from dotenv import load_dotenv
 from app.models import AnalayzeRequest, GPTRequest, UserConversationRequest
-from app.resolvers import get_conversation_resolver, process_answer, process_answer_and_generate_followup
+from app.resolvers import get_conversation_resolver, process_answer, process_answer_and_generate_followup, process_retrieve_keywords
 
 load_dotenv()
 
@@ -19,6 +19,10 @@ async def api_get_conversation(request: UserConversationRequest):
 @app.post("/answer")
 async def api_process_answer(request: AnalayzeRequest):
     return await process_answer(request)
+
+@app.post("/retrieve_keywords")
+async def retrieve_keywords(request: AnalayzeRequest):
+    return await process_retrieve_keywords(request)
 
 if __name__ == "__main__":
     import uvicorn
