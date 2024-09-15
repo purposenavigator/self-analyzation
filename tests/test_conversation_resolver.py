@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 
 from app.models import GPTRequest, UserConversation
-from app.resolvers import generate_responses, process_answer_and_generate_followup, process_conversation
+from app.resolvers import generate_responses, process_answer_and_generate_followup_resolver, process_conversation
 
 
 @pytest.mark.asyncio

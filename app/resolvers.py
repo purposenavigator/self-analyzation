@@ -77,7 +77,7 @@ async def generate_responses(user_conversation: UserConversation):
         logger.error(f"Error generating responses for conversation {user_conversation.conversation_id}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error while generating responses.")
 
-async def process_answer_and_generate_followup(request: GPTRequest):
+async def process_answer_and_generate_followup_resolver(request: GPTRequest):
     try:
         user_conversation = await process_conversation(request)
         ai_question_response, ai_summary_response, ai_analyze_response = await generate_responses(user_conversation)
@@ -89,7 +89,7 @@ async def process_answer_and_generate_followup(request: GPTRequest):
             "conversation_id": user_conversation.conversation_id
         }
     except Exception as e:
-        logger.error(f"Error in process_answer_and_generate_followup for request {request}: {e}")
+        logger.error(f"Error in process_answer_and_generate_followup_resolver for request {request}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 async def get_conversation_resolver(request: UserConversationRequest):
@@ -103,7 +103,7 @@ async def get_conversation_resolver(request: UserConversationRequest):
         logger.error(f"Error in get_conversation for request {request}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-async def process_answer(request: AnalayzeRequest):
+async def process_answer_resolver(request: AnalayzeRequest):
     try:
         first_conversation_id = request.conversation_id
         query = AnalyzeQuery(conversation_id=first_conversation_id)
@@ -112,10 +112,10 @@ async def process_answer(request: AnalayzeRequest):
         return analyze
         
     except Exception as e:
-        logger.error(f"Error in process_answer for request {request}: {e}")
+        logger.error(f"Error in process_answer_resolver for request {request}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-async def process_retrieve_keywords(request: AnalayzeRequest):
+async def process_retrieve_keywords_resolver(request: AnalayzeRequest):
     try:
         first_conversation_id = request.conversation_id
         query = AnalyzeQuery(conversation_id=first_conversation_id)
@@ -127,5 +127,5 @@ async def process_retrieve_keywords(request: AnalayzeRequest):
         return messages
         
     except Exception as e:
-        logger.error(f"Error in process_retrieve_keywords for request {request}: {e}")
+        logger.error(f"Error in process_retrieve_keywords_resolver for request {request}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
