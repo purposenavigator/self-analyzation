@@ -1,6 +1,7 @@
 # mongodb.py
 import os
 import logging
+from typing import List
 from fastapi import HTTPException
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.errors import DuplicateKeyError
@@ -130,6 +131,26 @@ async def update_conversation(user_conversation: UserConversation):
     except Exception as e:
         logger.error(f"Error updating conversation for user_id {user_id}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error while updating conversation.")
+
+async def store_keywords(conversation_id: str, keywords: List[str]):
+    try:
+        result: UpdateResult = await collection.update_one(
+            { "_id": ObjectId(conversation_id)},
+            {"$set": {
+                "keywords": keywords
+            }},
+            upsert=True
+        )
+        if result.upserted_id:
+            return str(result.upserted_id)
+        else:
+            existing_document = await collection.find_one(
+                { "_id": ObjectId(conversation_id)},
+            )
+            return str(existing_document["_id"])
+    except Exception as e:
+        logger.error(f"Error storing keywords for conversation_id {conversation_id}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error while storing keywords.")
 
 async def get_next_id(sequence_name: str) -> int:
     await initialize_counter(sequence_name)
