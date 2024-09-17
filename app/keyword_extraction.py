@@ -129,7 +129,7 @@ from app.openai_client import client
 
 def generate_keyword_extraction_prompts(analyze: List[str]) -> List[Dict[str, str]]:
     extract_prompts = """
-    Extract only the keywords that represent the most important traits, values, or actions of the subject from the following text. Show only the keywords, without additional context or sentences.
+    Extract only the keywords that represent the most important traits, values, or actions of the subject from the following text. Show only the keywords, without additional context or sentences. The output should be a list of keywords separated by commas.
     """
     
     return [
