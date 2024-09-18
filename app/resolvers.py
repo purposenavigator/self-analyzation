@@ -1,8 +1,8 @@
 
 from fastapi import HTTPException
 from app.keyword_extraction import fetch_keywords_from_api, generate_keyword_extraction_prompts
-from app.models import AnalayzeRequest, AnalyzeQuery, GPTRequest, SimpleConversationQuery, UserConversation, UserConversationQuery, UserConversationRequest
-from app.mongodb import get_analyze, get_conversation, init_or_get_conversation, store_keywords, update_conversation
+from app.models import AnalayzeRequest, AnalyzeQuery, GPTRequest, SimpleConversationQuery, UserConversation, UserConversationQuery, UserConversationRequest, UserIdRequest
+from app.mongodb import fetch_user_data_from_db, get_analyze, get_conversation, init_or_get_conversation, store_keywords, update_conversation
 from app.questions import get_system_role
 from app.openai_client import client
 
@@ -143,3 +143,23 @@ async def process_retrieve_keywords_resolver(request: AnalayzeRequest):
     except Exception as e:
         logger.error(f"Error in process_retrieve_keywords_resolver for request {request}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+async def get_all_user_conversations_resolver(user_request: UserIdRequest):
+    """
+    Calls the database function and handles the case where no data is found.
+    Takes a Pydantic model to retrieve user_id.
+    """
+    try:
+        user_data = await fetch_user_data_from_db(user_request.user_id)
+        
+        if not user_data:
+            raise ValueError(f"No data found for user_id {user_request.user_id}")
+        
+        return user_data
+    except ValueError as ve:
+        logger.warning(ve)
+        raise HTTPException(status_code=404, detail=str(ve))
+    except Exception as e:
+        logger.error(f"Resolver error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error while fetching data.")
+

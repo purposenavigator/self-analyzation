@@ -1,8 +1,8 @@
 # main.py
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from dotenv import load_dotenv
-from app.models import AnalayzeRequest, GPTRequest, UserConversationRequest
-from app.resolvers import get_conversation_resolver, process_answer_resolver, process_answer_and_generate_followup_resolver, process_retrieve_keywords_resolver
+from app.models import AnalayzeRequest, GPTRequest, UserConversationRequest, UserIdRequest
+from app.resolvers import get_all_user_conversations_resolver, get_conversation_resolver, process_answer_resolver, process_answer_and_generate_followup_resolver, process_retrieve_keywords_resolver
 
 load_dotenv()
 
@@ -23,6 +23,10 @@ async def api_process_answer(request: AnalayzeRequest):
 @app.post("/retrieve_keywords")
 async def retrieve_keywords(request: AnalayzeRequest):
     return await process_retrieve_keywords_resolver(request)
+
+@app.get("/user_conversations")
+async def get_user_data(user_request: UserIdRequest):
+    return await get_all_user_conversations_resolver(user_request)
 
 if __name__ == "__main__":
     import uvicorn

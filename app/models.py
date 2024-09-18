@@ -11,6 +11,9 @@ class GPTRequest(BaseModel):
     topic: str
     max_tokens: int = 150
 
+class UserIdRequest(BaseModel):
+    user_id: int
+
 class UserConversationRequest(BaseModel):
     user_id: int
     conversation_id: str

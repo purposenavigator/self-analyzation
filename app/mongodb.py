@@ -171,3 +171,23 @@ async def get_next_id(sequence_name: str) -> int:
         logger.error(f"Error fetching next ID for sequence_name {sequence_name}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error while fetching next ID.")
 
+async def fetch_user_data_from_db(user_id: int):
+    """
+    Interacts with the MongoDB database to retrieve all records that contain user_id
+    and have 'questions' and 'summaries' attributes.
+    """
+    try:
+        user_data = await collection.find({
+            "user_id": user_id,
+            "questions": { "$exists": True, "$ne": [] },
+            "summaries": { "$exists": True, "$ne": [] }
+        }).to_list(length=None)
+    
+        for document in user_data:
+            if "_id" in document:
+                document["_id"] = str(document["_id"])  # Convert ObjectId to string
+        
+        return user_data
+    except Exception as e:
+        logger.error(f"Database error fetching data for user_id {user_id}: {e}")
+        raise
