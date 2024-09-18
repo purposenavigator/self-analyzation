@@ -95,7 +95,7 @@ async def get_analyze(query: AnalyzeQuery) -> Analyze:
         analyze = Analyze(
                 conversation_id=conversation_id, 
                 analyze=conversation["analyze"],
-                keywords=conversation["keywords"]
+                keywords=conversation.get("keywords", [])
             )
         return analyze
     except Exception as e:
