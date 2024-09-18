@@ -61,9 +61,10 @@ class AnalyzeQuery:
         self.conversation_id = conversation_id
 
 class Analyze:
-    def __init__(self, conversation_id: str, analyze: List[Message]):
+    def __init__(self, conversation_id: str, analyze: List[Message], keywords: List[Message]):
         self.conversation_id = conversation_id
         self.analyze = analyze
+        self.keywords = keywords
 
 class Extract:
     def __init__(

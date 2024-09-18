@@ -13,6 +13,7 @@ class Conversation(TypedDict):
     summaries: List[Message]
     questions: List[Message]
     analyzes: List[Message]
+    keywords: List[Message]
 
 class SystemRole(TypedDict):
     role: str

@@ -2,7 +2,7 @@
 from fastapi import HTTPException
 from app.keyword_extraction import fetch_keywords_from_api, generate_keyword_extraction_prompts
 from app.models import AnalayzeRequest, AnalyzeQuery, GPTRequest, SimpleConversationQuery, UserConversation, UserConversationQuery, UserConversationRequest
-from app.mongodb import get_analyze, get_conversation, init_or_get_conversation, update_conversation
+from app.mongodb import get_analyze, get_conversation, init_or_get_conversation, store_keywords, update_conversation
 from app.questions import get_system_role
 from app.openai_client import client
 
@@ -121,10 +121,24 @@ async def process_retrieve_keywords_resolver(request: AnalayzeRequest):
         query = AnalyzeQuery(conversation_id=first_conversation_id)
         user_conversation = await get_analyze(query)
         analyze = [analyze['content'] for analyze in user_conversation.analyze if analyze["role"] == "assistant"]
-        prompts = generate_keyword_extraction_prompts(analyze)
-        responses = await fetch_keywords_from_api(prompts)
-        messages = [response.choices[0].message.content.strip() for response in responses]
-        return messages
+
+        if hasattr(user_conversation, 'keywords') and user_conversation.keywords:
+            keywords = [keyword for keyword in user_conversation.keywords]
+        else:
+            keywords = [] 
+
+        if len(analyze) > len(keywords):
+            missing_analyze = analyze[len(keywords):]
+            prompts = generate_keyword_extraction_prompts(missing_analyze)
+            
+            responses = await fetch_keywords_from_api(prompts)
+            new_keywords = [response.choices[0].message.content.strip() for response in responses]
+            
+            keywords.extend(new_keywords)
+            
+            await store_keywords(first_conversation_id, keywords)
+
+            return keywords
         
     except Exception as e:
         logger.error(f"Error in process_retrieve_keywords_resolver for request {request}: {e}")
