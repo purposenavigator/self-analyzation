@@ -1,5 +1,6 @@
 # main.py
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from app.models import AnalayzeRequest, GPTRequest, UserConversationRequest, UserIdRequest
 from app.resolvers import get_all_user_conversations_resolver, get_conversation_resolver, process_answer_resolver, process_answer_and_generate_followup_resolver, process_retrieve_keywords_resolver
@@ -7,6 +8,19 @@ from app.resolvers import get_all_user_conversations_resolver, get_conversation_
 load_dotenv()
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:3000",  
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.post("/conversation")
 async def api_process_answer_and_generate_followup_resolver(request: GPTRequest):
