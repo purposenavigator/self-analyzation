@@ -1,5 +1,6 @@
 
 from fastapi import HTTPException
+from app import questions
 from app.keyword_extraction import fetch_keywords_from_api, generate_keyword_extraction_prompts
 from app.models import AnalayzeRequest, AnalyzeQuery, GPTRequest, SimpleConversationQuery, UserConversation, UserConversationQuery, UserConversationRequest, UserIdRequest
 from app.mongodb import fetch_user_data_from_db, get_analyze, get_conversation, init_or_get_conversation, store_keywords, update_conversation
@@ -163,3 +164,5 @@ async def get_all_user_conversations_resolver(user_request: UserIdRequest):
         logger.error(f"Resolver error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error while fetching data.")
 
+async def get_all_questions_resolver():
+    return [{k: v} for k, v in questions.questions.items()]
