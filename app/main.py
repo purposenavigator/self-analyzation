@@ -38,7 +38,7 @@ async def api_process_answer(request: AnalayzeRequest):
 async def retrieve_keywords(request: AnalayzeRequest):
     return await process_retrieve_keywords_resolver(request)
 
-@app.get("/user_conversations")
+@app.post("/user_conversations")
 async def get_user_data(user_request: UserIdRequest):
     return await get_all_user_conversations_resolver(user_request)
 
