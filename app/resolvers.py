@@ -165,4 +165,5 @@ async def get_all_user_conversations_resolver(user_request: UserIdRequest):
         raise HTTPException(status_code=500, detail="Internal server error while fetching data.")
 
 async def get_all_questions_resolver():
-    return [{k: v} for k, v in questions.questions.items()]
+    return [{"id": i, "title": k, "explanation": v} for i, (k, v) in enumerate(questions.questions.items(), 1)]
+
