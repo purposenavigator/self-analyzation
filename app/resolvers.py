@@ -81,9 +81,11 @@ async def generate_responses(user_conversation: UserConversation):
 async def process_answer_and_generate_followup_resolver(request: GPTRequest):
     try:
         user_conversation = await process_conversation(request)
+        user_prompt = request.prompt
         ai_question_response, ai_summary_response, ai_analyze_response = await generate_responses(user_conversation)
 
         return {
+            "user_prompt": user_prompt,
             "summary_response": ai_summary_response,
             "question_response": ai_question_response,
             "analyze_response": ai_analyze_response,
