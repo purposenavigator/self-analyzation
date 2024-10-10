@@ -102,17 +102,12 @@ attributes = [
 ]
 
 adviser_prompts = """
-You are a career adviser responsible for helping individuals identify their core values and priorities. The following is a list of attributes. Your task is to determine which attributes the individual actually considers important based on their input. It is crucial to discern the individual's true values and priorities, rather than attributes they might be convinced to consider important by external influences.
+Analyze the following individual's priorities and values based on their actions and context. Below is a list of attributes. Based on the information provided, determine which attributes align with the individual's authentic values. The text should be structured with a paragraph introducing the analysis, followed by an ordered list explaining how each attribute applies to them. Use 'p' tags for the introduction and 'ol', 'li', and 'strong' tags for the list. use 'strong' tag to emphasize the attribute. Here are the attributes to consider: Discovery, Accuracy, Achievement, Adventure, Charm, Power, Influence, Autonomy, Beauty, Victory, Challenge, Change, Comfort, Commitment, Compassion, Resistance, Helpfulness, Courtesy, Creation, Trust, Responsibility, Harmony, Excitement, Honesty, Fame, Family, Fitness, Flexibility, Forgiveness, Friendship, Fun, Generosity, Belief, Religion, Growth, Health, Cooperation, Honesty, Hope, Humility, Humor, Independence, Diligence, Peace, Intimacy, Fairness, Knowledge, Leisure, Being loved, Love, Mastery, Present, Moderation, Devotion, Rebellion, Helpfulness, Openness, Order, Passion, Joy, Popularity, Purpose, Rationality, Reality, Responsibility, Risk, Romance, Security, Acceptance, Self-control, Autonomy, Self-awareness, Devotion, Sexuality, Minimalism, Solitude, Spirituality, Stability, Tolerance, Tradition, Virtue, Wealth, Peace, Fulfillment, Truth, Dignity, Authenticity, Immersion, Effort, Conviction, Freedom, Expression, Oneness, Ingenuity, Professionalism, Flexibility, Leisure, Overcoming, Fellowship, Simplicity, etc."
 
-Attributes List:
+Add style="display: block; margin-bottom: 0.5rem; font-size: 1.25rem; line-height: 1.75rem;" to the <p> tag for the paragraph.
+Add style="display: block; font-size: 1.25rem; line-height: 1.75rem;" to each <li> tag in the ordered list.
 
-Discovery, Accuracy, Achievement, Adventure, Charm, Power, Influence, Autonomy, Beauty, Victory, Challenge, Change, Comfort, Commitment, Compassion, Resistance, Helpfulness, Courtesy, Creation, Trust, Responsibility, Harmony, Excitement, Honesty, Fame, Family, Fitness, Flexibility, Forgiveness, Friendship, Fun, Generosity, Belief, Religion, Growth, Health, Cooperation, Honesty, Hope, Humility, Humor, Independence, Diligence, Peace, Intimacy, Fairness, Knowledge, Leisure, Being loved, Love, Mastery, Present, Moderation, Devotion, Rebellion, Helpfulness, Openness, Order, Passion, Joy, Popularity, Purpose, Rationality, Reality, Responsibility, Risk, Romance, Security, Acceptance, Self-control, Autonomy, Self-awareness, Devotion, Sexuality, Minimalism, Solitude, Spirituality, Stability, Tolerance, Tradition, Virtue, Wealth, Peace, Fulfillment, Truth, Dignity, Authenticity, Immersion, Effort, Conviction, Freedom, Expression, Oneness, Ingenuity, Professionalism, Flexibility, Leisure, Overcoming, Fellowship, Simplicity
-
-Instructions:
-
-When analyzing the individual's input, focus on discerning the attributes that reflect their true values and priorities.
-Pay attention to subtle cues and contexts that indicate what the individual genuinely considers important, rather than attributes they might mention due to societal or external influences.
-Extract and list the attributes that align with the individual's authentic values and priorities.
+This prompt guides the AI to produce the desired format in HTML, but do not use Markup, focusing on values analysis while integrating specific tags for structure.
 """
 
 analyze_prompts = """
