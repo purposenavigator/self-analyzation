@@ -3,7 +3,7 @@ from fastapi import HTTPException
 from app import questions
 from app.keyword_extraction import fetch_keywords_from_api, generate_keyword_extraction_prompts
 from app.models import AnalayzeRequest, AnalyzeQuery, GPTRequest, SimpleConversationQuery, UserConversation, UserConversationQuery, UserConversationRequest, UserIdRequest
-from app.mongodb import fetch_user_data_from_db, get_analyze, get_conversation, init_or_get_conversation, store_keywords, update_conversation
+from app.mongodb import create_conversation, fetch_user_data_from_db, get_analyze, get_conversation, init_or_get_conversation, store_keywords, update_conversation
 from app.questions import get_system_role
 from app.openai_client import client
 
@@ -39,7 +39,7 @@ async def process_conversation(request: GPTRequest) -> UserConversation:
         user_conversation.analyze.append({"role": "user", "content": request.prompt})
 
         if not first_conversation_id:
-            user_conversation.conversation_id = await update_conversation(user_conversation)
+            user_conversation.conversation_id = await create_conversation(user_conversation)
 
         return user_conversation
     except HTTPException as e:

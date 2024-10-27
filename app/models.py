@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import List, Optional
 from pydantic import BaseModel
 
@@ -47,6 +48,12 @@ class UserConversation:
             summaries: List[Message],
             questions: List[Message],
             analyze: List[Message],
+            title: Optional[str] = None,
+            created_at: datetime = None,
+            updated_at: datetime = None,
+            status: str = "active",
+            is_favorite: bool = False,
+            deleted_at: Optional[datetime] = None,  # type: ignore
             ):
         self.user_id = user_id
         self.conversation_id = conversation_id
@@ -54,6 +61,12 @@ class UserConversation:
         self.summaries = summaries
         self.questions = questions
         self.analyze = analyze
+        self.title = title
+        self.created_at = created_at or datetime.now(timezone.utc)
+        self.updated_at = updated_at or datetime.now(timezone.utc)
+        self.status = status
+        self.is_favorite = is_favorite
+        self.deleted_at = deleted_at
 
 class AnalayzeRequest(BaseModel):
     conversation_id: str
