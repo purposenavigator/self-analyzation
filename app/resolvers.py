@@ -21,7 +21,8 @@ async def process_conversation(request: GPTRequest) -> UserConversation:
         query = UserConversationQuery(
             conversation_id=first_conversation_id,
             user_id=request.user_id,
-            topic=topic
+            topic=topic,
+            question_id = request.question_id
         )
 
         user_conversation = await init_or_get_conversation(query)
@@ -95,7 +96,7 @@ async def process_answer_and_generate_followup_resolver(request: GPTRequest):
         logger.error(f"Error in process_answer_and_generate_followup_resolver for request {request}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-async def get_conversation_resolver(request: UserConversationRequest):
+async def get_conversation_resolver(request: UserConversationRequest) -> UserConversation:
     try:
         conversation_id = request.conversation_id
         user_id = request.user_id
@@ -167,5 +168,5 @@ async def get_all_user_conversations_resolver(user_request: UserIdRequest):
         raise HTTPException(status_code=500, detail="Internal server error while fetching data.")
 
 async def get_all_questions_resolver():
-    return [{"id": i, "title": k, "explanation": v} for i, (k, v) in enumerate(questions.questions.items(), 1)]
+    return [{"id": str(i), "title": k, "explanation": v} for i, (k, v) in enumerate(questions.questions.items(), 1)]
 

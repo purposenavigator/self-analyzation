@@ -26,7 +26,7 @@ app.add_middleware(
 async def api_process_answer_and_generate_followup_resolver(request: GPTRequest):
     return await process_answer_and_generate_followup_resolver(request)
 
-@app.get("/get_conversation")
+@app.post("/get_conversation")
 async def api_get_conversation(request: UserConversationRequest):
     return await get_conversation_resolver(request)
 

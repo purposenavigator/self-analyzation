@@ -14,6 +14,13 @@ class Conversation(TypedDict):
     questions: List[Message]
     analyzes: List[Message]
     keywords: List[Message]
+    topic: str
+    title: NotRequired[str]
+    created_at: NotRequired[str]
+    updated_at: NotRequired[str]
+    status: NotRequired[str]
+    is_favorite: NotRequired[bool]
+    deleted_at: NotRequired[str]
 
 class SystemRole(TypedDict):
     role: str
