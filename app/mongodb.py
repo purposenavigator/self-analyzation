@@ -98,6 +98,7 @@ async def init_or_get_conversation(query: UserConversationQuery) -> UserConversa
         update_conversation = UserConversation(
                 user_id=user_id, 
                 conversation_id=conversation_id, 
+                question_id=question_id,
                 topic=topic,
                 questions=conversation["questions"],
                 summaries=conversation["summaries"],

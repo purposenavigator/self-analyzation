@@ -14,6 +14,7 @@ async def test_get_conversation_success(mock_get_conversation_by_id):
     
     mock_conversation = {
         "_id": ObjectId(mock_conversation_id),
+        "topic": "Sample Topic",
         "questions": ["What is your favorite color?", "Why do you value honesty?"],
         "summaries": ["Summary 1", "Summary 2"],
         "analyze": {"key": "value"}
@@ -27,7 +28,7 @@ async def test_get_conversation_success(mock_get_conversation_by_id):
     assert isinstance(result, UserConversation)
     assert result.user_id == mock_user_id
     assert result.conversation_id == mock_conversation_id
-    assert result.topic == 'topic here'
+    assert result.topic == mock_conversation['topic']
     assert result.questions == mock_conversation["questions"]
     assert result.summaries == mock_conversation["summaries"]
     assert result.analyze == mock_conversation["analyze"]
