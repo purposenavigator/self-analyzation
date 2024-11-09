@@ -35,38 +35,60 @@ async def initialize_counter(sequence_name: str):
         logger.error(f"Error initializing counter for {sequence_name}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error while initializing counter.")
 
+async def get_conversation_by_id(conversation_id):
+    """
+    Fetches a conversation document from the MongoDB collection by its ID.
+
+    Parameters:
+    - collection: The MongoDB collection object.
+    - conversation_id: The ID of the conversation as a string.
+
+    Returns:
+    - The conversation document or None if not found.
+    """
+    try:
+        conversation = await collection.find_one({"_id": ObjectId(conversation_id)})
+        return conversation
+    except Exception as e:
+        raise Exception(f"An error occurred while fetching the conversation: {e}")
+
 async def get_conversation(query: SimpleConversationQuery) -> UserConversation:
     user_id = query.user_id
     conversation_id = query.conversation_id
 
     try:
-        conversation: Conversation | None = await collection.find_one({ "_id": ObjectId(conversation_id)})
+        conversation: Conversation | None = await get_conversation_by_id(conversation_id)
         if not conversation:
             return None
         user_conversation = UserConversation(
-                user_id=user_id, 
-                conversation_id=conversation_id, 
-                topic='topic here',
-                questions=conversation["questions"],
-                summaries=conversation["summaries"],
-                analyze=conversation["analyze"]
-            )
+            user_id=user_id,
+            conversation_id=conversation_id,
+            topic=conversation['topic'],
+            questions=conversation["questions"],
+            summaries=conversation["summaries"],
+            analyze=conversation["analyze"],
+            question_id=conversation.get("question_id")  # Ensure this attribute is passed
+        )
         return user_conversation
     except Exception as e:
         logger.error(f"Error fetching conversation for user_id {user_id}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error while fetching conversation.")
 
+
 async def init_or_get_conversation(query: UserConversationQuery) -> UserConversation:
     user_id = query.user_id
     conversation_id = query.conversation_id
     topic = query.topic
+    question_id = query.question_id
+
 
     try:
-        conversation: Conversation | None = await collection.find_one({ "_id": ObjectId(conversation_id)})
+        conversation: Conversation | None = await get_conversation_by_id(conversation_id)
         if not conversation:
             update_conversation = UserConversation(
                 user_id=user_id, 
                 conversation_id=conversation_id, 
+                question_id=question_id,
                 topic=topic,
                 questions=[],
                 summaries=[],
@@ -76,6 +98,7 @@ async def init_or_get_conversation(query: UserConversationQuery) -> UserConversa
         update_conversation = UserConversation(
                 user_id=user_id, 
                 conversation_id=conversation_id, 
+                question_id=question_id,
                 topic=topic,
                 questions=conversation["questions"],
                 summaries=conversation["summaries"],
@@ -93,7 +116,7 @@ async def get_analyze(query: AnalyzeQuery) -> Analyze:
     conversation_id = query.conversation_id
 
     try:
-        conversation: Conversation | None = await collection.find_one({ "_id": ObjectId(conversation_id)})
+        conversation: Conversation | None = await get_conversation_by_id(conversation_id)
         if not conversation:
             return None
         analyze = Analyze(

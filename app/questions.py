@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 
 from app.type import SystemRole, SystemRoles
-from app.keyword_extraction import adviser_prompts
+from app.openai_resolvers.keyword_extraction import adviser_prompts
 
 
 
