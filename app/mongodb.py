@@ -81,20 +81,23 @@ async def init_or_get_conversation(query: UserConversationQuery) -> UserConversa
     topic = query.topic
     question_id = query.question_id
 
-
-    try:
-        conversation: Conversation | None = await get_conversation_by_id(conversation_id)
-        if not conversation:
-            update_conversation = UserConversation(
+    initialized_conversation = UserConversation(
                 user_id=user_id, 
-                conversation_id=conversation_id, 
+                conversation_id=None, 
                 question_id=question_id,
                 topic=topic,
                 questions=[],
                 summaries=[],
                 analyze=[]
             )
-            return update_conversation
+    
+    if not conversation_id:
+        return initialized_conversation
+
+    try:
+        conversation: Conversation | None = await get_conversation_by_id(conversation_id)
+        if not conversation:
+            return initialized_conversation
         update_conversation = UserConversation(
                 user_id=user_id, 
                 conversation_id=conversation_id, 
