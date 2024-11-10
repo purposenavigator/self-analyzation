@@ -25,7 +25,7 @@ def create_summary_system_role(primary_question: str):
 
 def check_topic(topic: str):
     if topic not in questions:
-        raise HTTPException(status_code=400, detail=f"Invalid topic: {topic}")
+        raise HTTPException(status_code=500, detail=f"Invalid topic: {topic}")
 
 def get_system_role(topic: str) -> SystemRoles:
     check_topic(topic)
