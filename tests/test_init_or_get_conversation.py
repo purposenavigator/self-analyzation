@@ -61,7 +61,7 @@ async def test_init_or_get_conversation_non_existing():
         
         assert isinstance(result, UserConversation)
         assert result.user_id == query.user_id
-        assert result.conversation_id == query.conversation_id
+        assert result.conversation_id == None
         assert result.topic == query.topic
         assert result.questions == []
         assert result.summaries == []

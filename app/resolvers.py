@@ -39,7 +39,7 @@ async def process_conversation(request: GPTRequest) -> UserConversation:
         user_conversation.summaries.append({"role": "user", "content": request.prompt})
         user_conversation.analyze.append({"role": "user", "content": request.prompt})
 
-        if not first_conversation_id:
+        if not user_conversation.conversation_id:
             user_conversation.conversation_id = await create_conversation(user_conversation)
 
         return user_conversation
