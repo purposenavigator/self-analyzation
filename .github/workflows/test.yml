@@ -18,6 +18,9 @@ jobs:
       MONGODB_DB_NAME: ${{ secrets.MONGODB_DB_NAME }}
     steps:
     - uses: actions/checkout@v4
+    - name: Start MongoDB in Docker
+      run: |
+        docker run -d -p 27017:27017 --name mongodb mongo:latest
     - name: Set up Python 3.11
       uses: actions/setup-python@v3
       with:
