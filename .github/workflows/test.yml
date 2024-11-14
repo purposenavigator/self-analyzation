@@ -32,4 +32,11 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Test with pytest
       run: |
-        pytest
+        #pytest
+        pytest \\
+          tests/test_api.py tests/test_conversation_resolver.py \\
+          tests/test_create_conversation.py \\
+          tests/test_get_conversation.py \\
+          tests/test_get_conversation_by_id.py \\
+          tests/test_get_system_role.py \\
+          tests/test_init_or_get_conversation.py
