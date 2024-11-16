@@ -1,6 +1,7 @@
 
 from fastapi import HTTPException
 from app import questions
+from app.openai_resolvers.generate_responses import generate_responses
 from app.openai_resolvers.keyword_extraction import fetch_keywords_from_api, generate_keyword_extraction_prompts
 from app.models import AnalayzeRequest, AnalyzeQuery, GPTRequest, SimpleConversationQuery, UserConversation, UserConversationQuery, UserConversationRequest, UserIdRequest
 from app.mongodb import create_conversation, fetch_user_data_from_db, get_analyze, get_conversation, init_or_get_conversation, store_keywords, update_conversation
