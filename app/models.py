@@ -12,6 +12,7 @@ class GPTRequest(BaseModel):
     prompt: str
     topic: str
     max_tokens: int = 150
+    is_title_generate: bool = False
 
 class UserIdRequest(BaseModel):
     user_id: int

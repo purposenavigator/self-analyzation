@@ -1,6 +1,8 @@
 
 from fastapi import HTTPException
 from app import questions
+from app.openai_resolvers.get_title import get_title
+from app.openai_resolvers.generate_responses import generate_responses
 from app.openai_resolvers.keyword_extraction import fetch_keywords_from_api, generate_keyword_extraction_prompts
 from app.models import AnalayzeRequest, AnalyzeQuery, GPTRequest, SimpleConversationQuery, UserConversation, UserConversationQuery, UserConversationRequest, UserIdRequest
 from app.mongodb import create_conversation, fetch_user_data_from_db, get_analyze, get_conversation, init_or_get_conversation, store_keywords, update_conversation
@@ -55,13 +57,18 @@ async def process_answer_and_generate_followup_resolver(request: GPTRequest):
         user_conversation = await process_conversation(request)
         user_prompt = request.prompt
         ai_question_response, ai_summary_response, ai_analyze_response = await generate_responses(user_conversation)
+        if request.is_title_generate or user_conversation.title is None:
+            title = await get_title([ai_summary_response]) 
+        else:
+            title = user_conversation.title
 
         return {
             "user_prompt": user_prompt,
             "summary_response": ai_summary_response,
             "question_response": ai_question_response,
             "analyze_response": ai_analyze_response,
-            "conversation_id": user_conversation.conversation_id
+            "conversation_id": user_conversation.conversation_id,
+            "title": title
         }
     except Exception as e:
         logger.error(f"Error in process_answer_and_generate_followup_resolver for request {request}: {e}")
