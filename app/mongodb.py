@@ -187,7 +187,7 @@ async def update_conversation(user_conversation: UserConversation):
         "status": status,
         "is_favorite": is_favorite,
         "updated_at": updated_at,
-        "deleted_at": deleted_at
+        "deleted_at": deleted_at,
     }
 
     # Remove None values from the update data

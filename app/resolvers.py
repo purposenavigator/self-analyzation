@@ -57,8 +57,11 @@ async def process_answer_and_generate_followup_resolver(request: GPTRequest):
         user_conversation = await process_conversation(request)
         user_prompt = request.prompt
         ai_question_response, ai_summary_response, ai_analyze_response = await generate_responses(user_conversation)
+        await update_conversation(user_conversation)
         if request.is_title_generate or user_conversation.title is None:
             title = await get_title([ai_summary_response]) 
+            user_conversation.title = title
+            await update_conversation(user_conversation)
         else:
             title = user_conversation.title
 
