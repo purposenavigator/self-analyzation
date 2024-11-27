@@ -24,7 +24,6 @@ async def process_conversation(request: GPTRequest) -> UserConversation:
             conversation_id=first_conversation_id,
             user_id=request.user_id,
             topic=topic,
-            question_id = request.question_id
         )
 
         user_conversation = await init_or_get_conversation(query)
@@ -55,6 +54,7 @@ async def process_conversation(request: GPTRequest) -> UserConversation:
 async def process_answer_and_generate_followup_resolver(request: GPTRequest):
     try:
         user_conversation = await process_conversation(request)
+        print(user_conversation)
         user_prompt = request.prompt
         ai_question_response, ai_summary_response, ai_analyze_response = await generate_responses(user_conversation)
         await update_conversation(user_conversation)
@@ -151,3 +151,8 @@ async def get_all_user_conversations_resolver(user_request: UserIdRequest):
 async def get_all_questions_resolver():
     return [{"id": str(i), "title": k, "explanation": v} for i, (k, v) in enumerate(questions.questions.items(), 1)]
 
+async def get_question_resolver(topic: str):
+    if topic in questions.questions:
+        return {"title": topic, "explanation": questions.questions[topic]}
+    else:
+        raise HTTPException(status_code=404, detail=f"Topic '{topic}' not found.")

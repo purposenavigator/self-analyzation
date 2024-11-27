@@ -67,7 +67,6 @@ async def get_conversation(query: SimpleConversationQuery) -> UserConversation:
             questions=conversation["questions"],
             summaries=conversation["summaries"],
             analyze=conversation["analyze"],
-            question_id=conversation.get("question_id")  # Ensure this attribute is passed
         )
         return user_conversation
     except Exception as e:
@@ -79,12 +78,10 @@ async def init_or_get_conversation(query: UserConversationQuery) -> UserConversa
     user_id = query.user_id
     conversation_id = query.conversation_id
     topic = query.topic
-    question_id = query.question_id
 
     initialized_conversation = UserConversation(
                 user_id=user_id, 
                 conversation_id=None, 
-                question_id=question_id,
                 topic=topic,
                 questions=[],
                 summaries=[],
@@ -101,7 +98,6 @@ async def init_or_get_conversation(query: UserConversationQuery) -> UserConversa
         update_conversation = UserConversation(
                 user_id=user_id, 
                 conversation_id=conversation_id, 
-                question_id=question_id,
                 topic=topic,
                 questions=conversation["questions"],
                 summaries=conversation["summaries"],
