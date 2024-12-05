@@ -49,6 +49,7 @@ class UserConversation:
             summaries: List[Message],
             questions: List[Message],
             analyze: List[Message],
+            answers: List[Message],
             title: Optional[str] = None,
             created_at: datetime = None,
             updated_at: datetime = None,
@@ -62,6 +63,7 @@ class UserConversation:
         self.summaries = summaries
         self.questions = questions
         self.analyze = analyze
+        self.answers = answers
         self.title = title
         self.created_at = created_at or datetime.now(timezone.utc)
         self.updated_at = updated_at or datetime.now(timezone.utc)

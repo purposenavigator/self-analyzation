@@ -67,6 +67,7 @@ async def get_conversation(query: SimpleConversationQuery) -> UserConversation:
             questions=conversation["questions"],
             summaries=conversation["summaries"],
             analyze=conversation["analyze"],
+            answers=conversation.get("answers", []),
         )
         return user_conversation
     except Exception as e:
@@ -85,7 +86,8 @@ async def init_or_get_conversation(query: UserConversationQuery) -> UserConversa
                 topic=topic,
                 questions=[],
                 summaries=[],
-                analyze=[]
+                analyze=[],
+                answers=[]
             )
     
     if not conversation_id:
@@ -102,6 +104,7 @@ async def init_or_get_conversation(query: UserConversationQuery) -> UserConversa
                 questions=conversation["questions"],
                 summaries=conversation["summaries"],
                 analyze=conversation["analyze"],
+                answers=conversation["answers"],
                 created_at=conversation["created_at"],
                 status=conversation["status"],
                 is_favorite=conversation["is_favorite"],

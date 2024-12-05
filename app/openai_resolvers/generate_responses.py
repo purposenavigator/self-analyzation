@@ -27,9 +27,16 @@ async def generate_responses(user_conversation: UserConversation):
         ai_analyze_response = analyze_response.choices[0].message.content.strip()
         user_conversation.analyze.append({"role": "assistant", "content": ai_analyze_response})
 
+        answers_response = await client.chat.completions.create(
+            messages=user_conversation.answers,
+            model="gpt-4o-mini",
+        )
+        ai_answers_response = answers_response.choices[0].message.content.strip()
+        user_conversation.answers.append({"role": "assistant", "content": ai_answers_response})
+
         await update_conversation(user_conversation)
 
-        return ai_question_response, ai_summary_response, ai_analyze_response
+        return ai_question_response, ai_summary_response, ai_analyze_response, ai_answers_response
     except Exception as e:
         logger.error(f"Error generating responses for conversation {user_conversation.conversation_id}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error while generating responses.")

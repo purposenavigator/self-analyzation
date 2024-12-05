@@ -31,14 +31,17 @@ async def process_conversation(request: GPTRequest) -> UserConversation:
             question_role = system_roles["question"]
             summary_role = system_roles["summary"]
             analyzer_role = system_roles["analyze"]
+            answers_role = system_roles["answers"]
 
             user_conversation.questions.append(question_role)
             user_conversation.summaries.append(summary_role)
             user_conversation.analyze.append(analyzer_role)
+            user_conversation.answers.append(answers_role)
 
         user_conversation.questions.append({"role": "user", "content": request.prompt})
         user_conversation.summaries.append({"role": "user", "content": request.prompt})
         user_conversation.analyze.append({"role": "user", "content": request.prompt})
+        user_conversation.answers.append({"role": "user", "content": request.prompt})
 
         if not user_conversation.conversation_id:
             user_conversation.conversation_id = await create_conversation(user_conversation)
@@ -56,7 +59,7 @@ async def process_answer_and_generate_followup_resolver(request: GPTRequest):
         user_conversation = await process_conversation(request)
         print(user_conversation)
         user_prompt = request.prompt
-        ai_question_response, ai_summary_response, ai_analyze_response = await generate_responses(user_conversation)
+        ai_question_response, ai_summary_response, ai_analyze_response, ai_answers_response = await generate_responses(user_conversation)
         await update_conversation(user_conversation)
         if request.is_title_generate or user_conversation.title is None:
             title = await get_title([ai_summary_response]) 
@@ -70,6 +73,7 @@ async def process_answer_and_generate_followup_resolver(request: GPTRequest):
             "summary_response": ai_summary_response,
             "question_response": ai_question_response,
             "analyze_response": ai_analyze_response,
+            "answers_response": ai_answers_response,
             "conversation_id": user_conversation.conversation_id,
             "title": title
         }
