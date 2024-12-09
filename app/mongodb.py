@@ -142,6 +142,7 @@ async def create_conversation(user_conversation: UserConversation):
             "summaries": user_conversation.summaries,
             "questions": user_conversation.questions,
             "analyze": user_conversation.analyze,
+            "answers": user_conversation.answers,
             "title": user_conversation.title,
             "created_at": user_conversation.created_at or datetime.now(timezone.utc),
             "updated_at": user_conversation.updated_at or datetime.now(timezone.utc),
@@ -171,6 +172,7 @@ async def update_conversation(user_conversation: UserConversation):
     questions = user_conversation.questions
     summaries = user_conversation.summaries
     analyze = user_conversation.analyze
+    answers = user_conversation.answers
     title = user_conversation.title
     status = user_conversation.status
     is_favorite = user_conversation.is_favorite
@@ -182,6 +184,7 @@ async def update_conversation(user_conversation: UserConversation):
         "questions": questions,
         "summaries": summaries,
         "analyze": analyze,
+        "answers": answers,
         "title": title,
         "status": status,
         "is_favorite": is_favorite,

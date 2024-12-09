@@ -18,13 +18,30 @@ questions = {
 }
 
 def create_question_system_role(primary_question: str):
-    return f"You are an assistant that asks questions to guide the user to reflect on their values. Additionally, you must ensure that the discussion includes the primary question: '{primary_question}'"
+    return f"You are an assistant that asks questions to guide the user to reflect on their values. The question is the first question:'{primary_question}'"
 
 def create_summary_system_role(primary_question: str):
     return f"You are an assistant that summarizes the user's responses to the question: '{primary_question}'"
 
+#"Add the following styles to the HTML elements:\n"
+#'- Add `style="display: block; margin-bottom: 0.5rem; font-size: 1.25rem; line-height: 1.75rem;"` to the `<p>` tag for the paragraph.\n'
+#'- Add `style="display: block; font-size: 1.25rem; line-height: 1.75rem;"` to each `<li>` tag in the ordered list.\n\n'
+#"This prompt guides the AI to produce the desired format in HTML while focusing on values analysis and integrating specific tags for structure."
+
 def create_answers_system_role(primary_question: str):
-    return f"You are an assistant that generates several possible answers which the user might answer to the question: '{primary_question}'"
+    text = (
+        f"You are an assistant that generates several possible answers which the user might answer to the question: '{primary_question}'.\n"
+        "Express the answers as json objects. Please add title and answer\n"
+    )
+    return text
+
+def prompt_for_possible_answers(next_question: str, previous_answers: str):
+    text = (
+        f"Imagine you are the user and you are answering the question: '{next_question}'.\n"
+        f"Based on the user's previous response, '{previous_answers}', generate several possible answers to the question.\n"
+        "Generate several possible answers to the question based on the user's previous responses.\n"
+    )
+    return text
 
 def check_topic(topic: str):
     if topic not in questions:
