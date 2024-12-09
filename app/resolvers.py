@@ -1,7 +1,6 @@
 
 from fastapi import HTTPException
 from app import questions
-from app.openai_resolvers.get_title import get_title
 from app.openai_resolvers.generate_responses import generate_responses
 from app.openai_resolvers.keyword_extraction import fetch_keywords_from_api, generate_keyword_extraction_prompts
 from app.models import AnalayzeRequest, AnalyzeQuery, GPTRequest, SimpleConversationQuery, UserConversation, UserConversationQuery, UserConversationRequest, UserIdRequest

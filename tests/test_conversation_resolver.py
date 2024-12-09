@@ -44,4 +44,3 @@ async def test_process_conversation_invalid_topic():
         await process_conversation(request)
     assert excinfo.value.status_code == 500
     assert excinfo.value.detail == "Invalid topic: NonExistentTopic"
-
