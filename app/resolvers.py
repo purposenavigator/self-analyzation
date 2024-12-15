@@ -1,10 +1,11 @@
 
+from app.openai_resolvers.keyword_extraction import create_prompt_for_single_sentence, create_prompts_for_multiple_sentences, fetch_keywords_from_api, fetch_keywords_from_api_only_one
 from fastapi import HTTPException
 from app import questions
+from app.openai_resolvers.get_title import get_title
 from app.openai_resolvers.generate_responses import generate_responses
-from app.openai_resolvers.keyword_extraction import fetch_keywords_from_api, generate_keyword_extraction_prompts
 from app.models import AnalayzeRequest, AnalyzeQuery, GPTRequest, SimpleConversationQuery, UserConversation, UserConversationQuery, UserConversationRequest, UserIdRequest
-from app.mongodb import create_conversation, fetch_user_data_from_db, get_analyze, get_conversation, init_or_get_conversation, store_keywords, update_conversation
+from app.mongodb import create_conversation, fetch_user_data_from_db, get_analyze, get_conversation, get_conversation_by_id, init_or_get_conversation, store_keywords, update_conversation
 from app.questions import get_system_role
 from app.openai_client import client
 
@@ -115,7 +116,7 @@ async def process_retrieve_keywords_resolver(request: AnalayzeRequest):
 
         if len(analyze) > len(keywords):
             missing_analyze = analyze[len(keywords):]
-            prompts = generate_keyword_extraction_prompts(missing_analyze)
+            prompts = create_prompts_for_multiple_sentences(missing_analyze)
             
             responses = await fetch_keywords_from_api(prompts)
             new_keywords = [response.choices[0].message.content.strip() for response in responses]
@@ -157,3 +158,40 @@ async def get_question_resolver(topic: str):
         return {"title": topic, "explanation": questions.questions[topic]}
     else:
         raise HTTPException(status_code=404, detail=f"Topic '{topic}' not found.")
+
+async def get_analyze_resolver(conversation_id: str):
+    """
+    Fetches and analyzes the conversation by extracting keywords from summaries.
+
+    Args:
+        conversation_id (str): The ID of the conversation to analyze.
+
+    Returns:
+        str: The extracted keywords.
+
+    Raises:
+        HTTPException: If there is an error during data fetching or processing.
+    """
+    try:
+        # Retrieve the conversation by ID
+        user_conversation = await get_conversation_by_id(conversation_id)
+        
+        # Extract summaries content from assistant role
+        summaries_content = " ".join(
+            summary['content'] 
+            for summary in user_conversation['summaries'] 
+            if summary["role"] == "assistant"
+        )
+        
+        # Generate prompts and fetch keywords from API
+        prompts = create_prompt_for_single_sentence(summaries_content)
+        api_response = await fetch_keywords_from_api_only_one(prompts)
+        
+        # Extract and return the processed result
+        extracted_keywords = api_response.choices[0].message.content.strip()
+        return extracted_keywords
+    except Exception as error:
+        # Log the error and raise an HTTP exception
+        logger.error(f"Error in get_analyze_resolver: {error}")
+        raise HTTPException(status_code=500, detail="Internal server error while fetching data.")
+

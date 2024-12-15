@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from app.models import AnalayzeRequest, GPTRequest, UserConversationRequest, UserIdRequest
-from app.resolvers import get_all_questions_resolver, get_all_user_conversations_resolver, get_conversation_resolver, get_question_resolver, process_answer_resolver, process_answer_and_generate_followup_resolver, process_retrieve_keywords_resolver
+from app.resolvers import get_all_questions_resolver, get_all_user_conversations_resolver, get_analyze_resolver, get_conversation_resolver, get_question_resolver, process_answer_resolver, process_answer_and_generate_followup_resolver, process_retrieve_keywords_resolver
 from app.type import Conversation
 
 load_dotenv()
@@ -50,6 +50,10 @@ async def get_questions():
 @app.get("/question/{topic}")
 async def get_question(topic):
     return await get_question_resolver(topic)
+
+@app.get("/analyze/{conversation_id}")
+async def get_analyze(conversation_id: str):
+    return await get_analyze_resolver(conversation_id)
 
 if __name__ == "__main__":
     import uvicorn

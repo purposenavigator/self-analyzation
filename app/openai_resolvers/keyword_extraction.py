@@ -121,28 +121,74 @@ Discovery, Accuracy, Achievement, Adventure, Charm, Power, Influence, Autonomy, 
 from typing import List, Dict
 from app.openai_client import client
 
+PROMPT_TEMPLATE = """
+Extract only the keywords that represent the most important traits, values, or actions of the subject from the following text. Show only the keywords, without additional context or sentences. The output should be a list of keywords separated by commas.
+"""
 
-def generate_keyword_extraction_prompts(analyze: List[str]) -> List[Dict[str, str]]:
-    extract_prompts = """
-    Extract only the keywords that represent the most important traits, values, or actions of the subject from the following text. Show only the keywords, without additional context or sentences. The output should be a list of keywords separated by commas.
+def create_prompts_for_multiple_sentences(analyze: List[str]) -> List[Dict[str, str]]:
     """
-    
+    Generates keyword extraction prompts for a list of sentences.
+
+    Args:
+        analyze (List[str]): A list of sentences to analyze.
+
+    Returns:
+        List[Dict[str, str]]: A list of prompts formatted for the chat API.
+    """
     return [
         {
             "role": "system",
-            "content": f"{extract_prompts}\n\nText: {sentence}"
+            "content": f"{PROMPT_TEMPLATE}\n\nText: {sentence}"
         }
         for sentence in analyze
     ]
 
-async def fetch_keywords_from_api(extract_roles: List[Dict[str, str]]):
-    responses = []
-    
-    for extract_role in extract_roles:
-        response = await client.chat.completions.create(
-            messages=[extract_role], 
-            model="gpt-4o-mini",  
+def create_prompt_for_single_sentence(sentence: str) -> List[Dict[str, str]]:
+    """
+    Generates keyword extraction prompts for a single sentence with separate roles.
+
+    Args:
+        sentence (str): The sentence to analyze.
+
+    Returns:
+        List[Dict[str, str]]: A list of role-based prompts for the chat API.
+    """
+    return [
+        {"role": "system", "content": PROMPT_TEMPLATE},
+        {"role": "user", "content": sentence}
+    ]
+
+async def fetch_keywords_from_api_only_one(extract_roles: List[Dict[str, str]]):
+    """
+    Fetches keywords from the API for a single role-based prompt.
+
+    Args:
+        extract_roles (List[Dict[str, str]]): Role-based prompts for the API.
+
+    Returns:
+        Response object from the API.
+    """
+    return await client.chat.completions.create(
+        messages=extract_roles,
+        model="gpt-4o-mini"
+    )
+
+async def fetch_keywords_from_api(extract_roles: List[Dict[str, str]]) -> List:
+    """
+    Fetches keywords from the API for multiple prompts.
+
+    Args:
+        extract_roles (List[Dict[str, str]]): A list of prompts for the API.
+
+    Returns:
+        List: A list of responses from the API.
+    """
+    # Use list comprehension for asynchronous calls and collect responses
+    return [
+        await client.chat.completions.create(
+            messages=[extract_role],
+            model="gpt-4o-mini"
         )
-        responses.append(response)
-    
-    return responses
+        for extract_role in extract_roles
+    ]
+

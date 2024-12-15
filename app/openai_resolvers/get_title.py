@@ -14,7 +14,7 @@ async def ask_title(sentences: list[str]) -> dict:
     client_role = create_client_role(sentences)
     print(client_role)
     return await client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4o-mini",
         messages=[system_prompt, client_role]
     )
 
