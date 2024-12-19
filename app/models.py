@@ -8,10 +8,10 @@ from app.type import Message
 class GPTRequest(BaseModel):
     user_id: int
     conversation_id: Optional[str] = None
-    question_id: str
     prompt: str
     topic: str
     max_tokens: int = 150
+    is_title_generate: bool = False
 
 class UserIdRequest(BaseModel):
     user_id: int
@@ -36,21 +36,20 @@ class UserConversationQuery:
         conversation_id (Optional[str]): The ID of the conversation. This is used for querying specific conversation history.
     """
 
-    def __init__(self, user_id: int, question_id: str, topic: str, conversation_id: Optional[str] = None):
+    def __init__(self, user_id: int, topic: str, conversation_id: Optional[str] = None):
         self.user_id = user_id
         self.conversation_id = conversation_id
-        self.question_id = question_id
         self.topic = topic
 
 class UserConversation:
     def __init__(
             self, user_id: int, 
             conversation_id: str, 
-            question_id: str,
             topic: str,
             summaries: List[Message],
             questions: List[Message],
             analyze: List[Message],
+            answers: List[Message],
             title: Optional[str] = None,
             created_at: datetime = None,
             updated_at: datetime = None,
@@ -60,11 +59,11 @@ class UserConversation:
             ):
         self.user_id = user_id
         self.conversation_id = conversation_id
-        self.question_id = question_id
         self.topic = topic
         self.summaries = summaries
         self.questions = questions
         self.analyze = analyze
+        self.answers = answers
         self.title = title
         self.created_at = created_at or datetime.now(timezone.utc)
         self.updated_at = updated_at or datetime.now(timezone.utc)

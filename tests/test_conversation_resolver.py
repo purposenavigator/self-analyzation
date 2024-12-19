@@ -24,13 +24,12 @@ async def test_process_conversation_init_success(get_system_role_mock, get_conve
             user_id=123, 
             conversation_id=None, 
             topic="Test",
-            question_id="question123", 
             questions=[], 
             summaries=[],
             analyze=[]
         )
 
-    request = GPTRequest(conversation_id=None, user_id=123, question_id="question123", topic="Test", prompt="Hello, how are you?")
+    request = GPTRequest(conversation_id=None, user_id=123, topic="Test", prompt="Hello, how are you?")
     user_conversation = await process_conversation(request)
 
     assert user_conversation.user_id == 123
@@ -40,7 +39,7 @@ async def test_process_conversation_init_success(get_system_role_mock, get_conve
 
 @pytest.mark.asyncio
 async def test_process_conversation_invalid_topic():
-    request = GPTRequest(topic="NonExistentTopic", conversation_id=None, user_id=123, question_id="question123", prompt="Test prompt")
+    request = GPTRequest(topic="NonExistentTopic", conversation_id=None, user_id=123, prompt="Test prompt")
     with pytest.raises(HTTPException) as excinfo:
         await process_conversation(request)
     assert excinfo.value.status_code == 500

@@ -1,10 +1,11 @@
 
+from app.openai_resolvers.keyword_extraction import create_prompt_for_single_sentence, create_prompts_for_multiple_sentences, fetch_keywords_from_api, fetch_keywords_from_api_only_one
 from fastapi import HTTPException
 from app import questions
+from app.openai_resolvers.get_title import get_title
 from app.openai_resolvers.generate_responses import generate_responses
-from app.openai_resolvers.keyword_extraction import fetch_keywords_from_api, generate_keyword_extraction_prompts
 from app.models import AnalayzeRequest, AnalyzeQuery, GPTRequest, SimpleConversationQuery, UserConversation, UserConversationQuery, UserConversationRequest, UserIdRequest
-from app.mongodb import create_conversation, fetch_user_data_from_db, get_analyze, get_conversation, init_or_get_conversation, store_keywords, update_conversation
+from app.mongodb import create_conversation, fetch_user_data_from_db, get_analyze, get_conversation, get_conversation_by_id, init_or_get_conversation, store_keywords, update_conversation
 from app.questions import get_system_role
 from app.openai_client import client
 
@@ -23,7 +24,6 @@ async def process_conversation(request: GPTRequest) -> UserConversation:
             conversation_id=first_conversation_id,
             user_id=request.user_id,
             topic=topic,
-            question_id = request.question_id
         )
 
         user_conversation = await init_or_get_conversation(query)
@@ -31,10 +31,12 @@ async def process_conversation(request: GPTRequest) -> UserConversation:
             question_role = system_roles["question"]
             summary_role = system_roles["summary"]
             analyzer_role = system_roles["analyze"]
+            answers_role = system_roles["answers"]
 
             user_conversation.questions.append(question_role)
             user_conversation.summaries.append(summary_role)
             user_conversation.analyze.append(analyzer_role)
+            user_conversation.answers.append(answers_role)
 
         user_conversation.questions.append({"role": "user", "content": request.prompt})
         user_conversation.summaries.append({"role": "user", "content": request.prompt})
@@ -55,14 +57,23 @@ async def process_answer_and_generate_followup_resolver(request: GPTRequest):
     try:
         user_conversation = await process_conversation(request)
         user_prompt = request.prompt
-        ai_question_response, ai_summary_response, ai_analyze_response = await generate_responses(user_conversation)
+        ai_question_response, ai_summary_response, ai_analyze_response, ai_answers_response = await generate_responses(user_conversation)
+        await update_conversation(user_conversation)
+        if request.is_title_generate or user_conversation.title is None:
+            title = await get_title([ai_summary_response]) 
+            user_conversation.title = title
+            await update_conversation(user_conversation)
+        else:
+            title = user_conversation.title
 
         return {
             "user_prompt": user_prompt,
             "summary_response": ai_summary_response,
             "question_response": ai_question_response,
             "analyze_response": ai_analyze_response,
-            "conversation_id": user_conversation.conversation_id
+            "answers_response": ai_answers_response,
+            "conversation_id": user_conversation.conversation_id,
+            "title": title
         }
     except Exception as e:
         logger.error(f"Error in process_answer_and_generate_followup_resolver for request {request}: {e}")
@@ -105,7 +116,7 @@ async def process_retrieve_keywords_resolver(request: AnalayzeRequest):
 
         if len(analyze) > len(keywords):
             missing_analyze = analyze[len(keywords):]
-            prompts = generate_keyword_extraction_prompts(missing_analyze)
+            prompts = create_prompts_for_multiple_sentences(missing_analyze)
             
             responses = await fetch_keywords_from_api(prompts)
             new_keywords = [response.choices[0].message.content.strip() for response in responses]
@@ -141,4 +152,46 @@ async def get_all_user_conversations_resolver(user_request: UserIdRequest):
 
 async def get_all_questions_resolver():
     return [{"id": str(i), "title": k, "explanation": v} for i, (k, v) in enumerate(questions.questions.items(), 1)]
+
+async def get_question_resolver(topic: str):
+    if topic in questions.questions:
+        return {"title": topic, "explanation": questions.questions[topic]}
+    else:
+        raise HTTPException(status_code=404, detail=f"Topic '{topic}' not found.")
+
+async def get_analyze_resolver(conversation_id: str):
+    """
+    Fetches and analyzes the conversation by extracting keywords from summaries.
+
+    Args:
+        conversation_id (str): The ID of the conversation to analyze.
+
+    Returns:
+        str: The extracted keywords.
+
+    Raises:
+        HTTPException: If there is an error during data fetching or processing.
+    """
+    try:
+        # Retrieve the conversation by ID
+        user_conversation = await get_conversation_by_id(conversation_id)
+        
+        # Extract summaries content from assistant role
+        summaries_content = " ".join(
+            summary['content'] 
+            for summary in user_conversation['summaries'] 
+            if summary["role"] == "assistant"
+        )
+        
+        # Generate prompts and fetch keywords from API
+        prompts = create_prompt_for_single_sentence(summaries_content)
+        api_response = await fetch_keywords_from_api_only_one(prompts)
+        
+        # Extract and return the processed result
+        extracted_keywords = api_response.choices[0].message.content.strip()
+        return extracted_keywords
+    except Exception as error:
+        # Log the error and raise an HTTP exception
+        logger.error(f"Error in get_analyze_resolver: {error}")
+        raise HTTPException(status_code=500, detail="Internal server error while fetching data.")
 

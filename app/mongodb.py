@@ -67,7 +67,7 @@ async def get_conversation(query: SimpleConversationQuery) -> UserConversation:
             questions=conversation["questions"],
             summaries=conversation["summaries"],
             analyze=conversation["analyze"],
-            question_id=conversation.get("question_id")  # Ensure this attribute is passed
+            answers=conversation.get("answers", []),
         )
         return user_conversation
     except Exception as e:
@@ -79,16 +79,15 @@ async def init_or_get_conversation(query: UserConversationQuery) -> UserConversa
     user_id = query.user_id
     conversation_id = query.conversation_id
     topic = query.topic
-    question_id = query.question_id
 
     initialized_conversation = UserConversation(
                 user_id=user_id, 
                 conversation_id=None, 
-                question_id=question_id,
                 topic=topic,
                 questions=[],
                 summaries=[],
-                analyze=[]
+                analyze=[],
+                answers=[]
             )
     
     if not conversation_id:
@@ -101,11 +100,11 @@ async def init_or_get_conversation(query: UserConversationQuery) -> UserConversa
         update_conversation = UserConversation(
                 user_id=user_id, 
                 conversation_id=conversation_id, 
-                question_id=question_id,
                 topic=topic,
                 questions=conversation["questions"],
                 summaries=conversation["summaries"],
                 analyze=conversation["analyze"],
+                answers=conversation["answers"],
                 created_at=conversation["created_at"],
                 status=conversation["status"],
                 is_favorite=conversation["is_favorite"],
@@ -143,6 +142,7 @@ async def create_conversation(user_conversation: UserConversation):
             "summaries": user_conversation.summaries,
             "questions": user_conversation.questions,
             "analyze": user_conversation.analyze,
+            "answers": user_conversation.answers,
             "title": user_conversation.title,
             "created_at": user_conversation.created_at or datetime.now(timezone.utc),
             "updated_at": user_conversation.updated_at or datetime.now(timezone.utc),
@@ -172,6 +172,7 @@ async def update_conversation(user_conversation: UserConversation):
     questions = user_conversation.questions
     summaries = user_conversation.summaries
     analyze = user_conversation.analyze
+    answers = user_conversation.answers
     title = user_conversation.title
     status = user_conversation.status
     is_favorite = user_conversation.is_favorite
@@ -183,11 +184,12 @@ async def update_conversation(user_conversation: UserConversation):
         "questions": questions,
         "summaries": summaries,
         "analyze": analyze,
+        "answers": answers,
         "title": title,
         "status": status,
         "is_favorite": is_favorite,
         "updated_at": updated_at,
-        "deleted_at": deleted_at
+        "deleted_at": deleted_at,
     }
 
     # Remove None values from the update data
