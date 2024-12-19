@@ -102,12 +102,8 @@ attributes = [
 ]
 
 adviser_prompts = """
-Analyze the following individual's priorities and values based on their actions and context. Below is a list of attributes. Based on the information provided, determine which attributes align with the individual's authentic values. The text should be structured with a paragraph introducing the analysis, followed by an ordered list explaining how each attribute applies to them. Use 'p' tags for the introduction and 'ol', 'li', and 'strong' tags for the list. use 'strong' tag to emphasize the attribute. Here are the attributes to consider: Discovery, Accuracy, Achievement, Adventure, Charm, Power, Influence, Autonomy, Beauty, Victory, Challenge, Change, Comfort, Commitment, Compassion, Resistance, Helpfulness, Courtesy, Creation, Trust, Responsibility, Harmony, Excitement, Honesty, Fame, Family, Fitness, Flexibility, Forgiveness, Friendship, Fun, Generosity, Belief, Religion, Growth, Health, Cooperation, Honesty, Hope, Humility, Humor, Independence, Diligence, Peace, Intimacy, Fairness, Knowledge, Leisure, Being loved, Love, Mastery, Present, Moderation, Devotion, Rebellion, Helpfulness, Openness, Order, Passion, Joy, Popularity, Purpose, Rationality, Reality, Responsibility, Risk, Romance, Security, Acceptance, Self-control, Autonomy, Self-awareness, Devotion, Sexuality, Minimalism, Solitude, Spirituality, Stability, Tolerance, Tradition, Virtue, Wealth, Peace, Fulfillment, Truth, Dignity, Authenticity, Immersion, Effort, Conviction, Freedom, Expression, Oneness, Ingenuity, Professionalism, Flexibility, Leisure, Overcoming, Fellowship, Simplicity, etc."
+Analyze the following individual's priorities and values based on their actions and context. Below is a list of attributes. Based on the information provided, determine which attributes align with the individual's authentic values. The text should be structured with an ordered list explaining how each attribute applies to them. The list structure is the following: **Attribute** - Explanation string. Each list item is separated by next line. Do not add any paragraph or sentences but the list. Here are the attributes to consider: Discovery, Accuracy, Achievement, Adventure, Charm, Power, Influence, Autonomy, Beauty, Victory, Challenge, Change, Comfort, Commitment, Compassion, Resistance, Helpfulness, Courtesy, Creation, Trust, Responsibility, Harmony, Excitement, Honesty, Fame, Family, Fitness, Flexibility, Forgiveness, Friendship, Fun, Generosity, Belief, Religion, Growth, Health, Cooperation, Honesty, Hope, Humility, Humor, Independence, Diligence, Peace, Intimacy, Fairness, Knowledge, Leisure, Being loved, Love, Mastery, Present, Moderation, Devotion, Rebellion, Helpfulness, Openness, Order, Passion, Joy, Popularity, Purpose, Rationality, Reality, Responsibility, Risk, Romance, Security, Acceptance, Self-control, Autonomy, Self-awareness, Devotion, Sexuality, Minimalism, Solitude, Spirituality, Stability, Tolerance, Tradition, Virtue, Wealth, Peace, Fulfillment, Truth, Dignity, Authenticity, Immersion, Effort, Conviction, Freedom, Expression, Oneness, Ingenuity, Professionalism, Flexibility, Leisure, Overcoming, Fellowship, Simplicity, etc."
 
-Add style="display: block; margin-bottom: 0.5rem; font-size: 1.25rem; line-height: 1.75rem;" to the <p> tag for the paragraph.
-Add style="display: block; font-size: 1.25rem; line-height: 1.75rem;" to each <li> tag in the ordered list.
-
-This prompt guides the AI to produce the desired format in HTML, but do not use Markup, focusing on values analysis while integrating specific tags for structure.
 """
 
 analyze_prompts = """
@@ -154,7 +150,7 @@ def create_prompt_for_single_sentence(sentence: str) -> List[Dict[str, str]]:
         List[Dict[str, str]]: A list of role-based prompts for the chat API.
     """
     return [
-        {"role": "system", "content": PROMPT_TEMPLATE},
+        {"role": "system", "content": adviser_prompts},
         {"role": "user", "content": sentence}
     ]
 
