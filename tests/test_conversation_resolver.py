@@ -18,7 +18,8 @@ async def test_process_conversation_init_success(get_system_role_mock, get_conve
     get_system_role_mock.return_value = {
         'question': {'role': 'system', 'content': 'some test question'}, 
         'summary': {'role': 'system', 'content': 'some test summary'},
-        'analyze': {'role': 'system', 'content': 'some test advisor'}
+        'analyze': {'role': 'system', 'content': 'some test advisor'},
+        'answers': {'role': 'system', 'content': 'some test advisor'}
         }
     get_conversation_mock.return_value = UserConversation(
             user_id=123, 
@@ -26,6 +27,7 @@ async def test_process_conversation_init_success(get_system_role_mock, get_conve
             topic="Test",
             questions=[], 
             summaries=[],
+            answers=[],
             analyze=[]
         )
 
