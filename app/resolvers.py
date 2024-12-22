@@ -1,13 +1,13 @@
-
 from app.openai_resolvers.keyword_extraction import create_prompt_for_single_sentence, create_prompts_for_multiple_sentences, fetch_keywords_from_api, fetch_keywords_from_api_only_one
 from fastapi import HTTPException
 from app import questions
 from app.openai_resolvers.get_title import get_title
 from app.openai_resolvers.generate_responses import generate_responses
 from app.models import AnalayzeRequest, AnalyzeQuery, GPTRequest, SimpleConversationQuery, UserConversation, UserConversationQuery, UserConversationRequest, UserIdRequest
-from app.mongodb import create_conversation, fetch_user_data_from_db, get_analyze, get_conversation, get_conversation_by_id, init_or_get_conversation, store_keywords, update_conversation
+from app.mongodb import create_conversation, fetch_user_data_from_db, get_analyze, get_conversation, get_conversation_by_id, init_or_get_conversation, store_keywords, update_conversation, update_or_append_field_by_id, get_analysis_summary_by_sha
 from app.questions import get_system_role
 from app.openai_client import client
+import hashlib
 
 import logging
 
@@ -162,36 +162,52 @@ async def get_question_resolver(topic: str):
 async def get_analyze_resolver(conversation_id: str):
     """
     Fetches and analyzes the conversation by extracting keywords from summaries.
+    Returns existing analysis if SHA matches, otherwise generates new analysis.
 
     Args:
         conversation_id (str): The ID of the conversation to analyze.
 
     Returns:
-        str: The extracted keywords.
+        str: The analysis summary.
 
     Raises:
         HTTPException: If there is an error during data fetching or processing.
     """
     try:
-        # Retrieve the conversation by ID
         user_conversation = await get_conversation_by_id(conversation_id)
         
-        # Extract summaries content from assistant role
+        # Combine all assistant summaries
         summaries_content = " ".join(
             summary['content'] 
             for summary in user_conversation['summaries'] 
             if summary["role"] == "assistant"
         )
+
+        # Generate SHA-256 hash of the combined summaries
+        sha256_hash = hashlib.sha256(summaries_content.encode('utf-8')).hexdigest()
         
-        # Generate prompts and fetch keywords from API
+        # Try to get existing analysis summary
+        existing_summary = await get_analysis_summary_by_sha(conversation_id, sha256_hash)
+        
+        if existing_summary:
+            return existing_summary
+            
+        # If no existing summary, generate new one
         prompts = create_prompt_for_single_sentence(summaries_content)
         api_response = await fetch_keywords_from_api_only_one(prompts)
+        analysis_summary = api_response.choices[0].message.content.strip()
         
-        # Extract and return the processed result
-        extracted_keywords = api_response.choices[0].message.content.strip()
-        return extracted_keywords
+        # Store the new analysis summary
+        await update_or_append_field_by_id(
+            conversation_id=conversation_id,
+            field_name="analysis_summaries",
+            key=sha256_hash,
+            value=analysis_summary
+        )
+        
+        return analysis_summary
+        
     except Exception as error:
-        # Log the error and raise an HTTP exception
         logger.error(f"Error in get_analyze_resolver: {error}")
         raise HTTPException(status_code=500, detail="Internal server error while fetching data.")
 
