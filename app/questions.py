@@ -11,11 +11,3 @@ questions = {
     "Emotion": "What kinds of things move you? What is the most moving experience you have had? What does that reveal about your values?",
     "Reflection": "(Imagine you are 80 years old and fill in the blanks) I spent too much time on □□□. I hardly spent any time on □□□. If I could turn back time, I would like to spend my time on □□□. What does that reveal about your values?"
 }
-
-def prompt_for_possible_answers(next_question: str, previous_answers: str):
-    text = (
-        f"Imagine you are the user and you are answering the question: '{next_question}'.\n"
-        f"Based on the user's previous response, '{previous_answers}', generate several possible answers to the question.\n"
-        "Generate several possible answers to the question based on the user's previous responses.\n"
-    )
-    return text
