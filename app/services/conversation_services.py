@@ -1,6 +1,6 @@
 from fastapi import HTTPException
-from app.models import GPTRequest, UserConversation, UserConversationQuery
-from app.mongodb import init_or_get_conversation, create_conversation
+from app.packages.models import GPTRequest, UserConversation, UserConversationQuery
+from app.packages.mongodb import init_or_get_conversation, create_conversation
 from app.questions import get_system_role
 import logging
 

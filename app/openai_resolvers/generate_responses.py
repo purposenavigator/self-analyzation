@@ -1,7 +1,7 @@
 from fastapi import HTTPException, logger
 from app.questions import prompt_for_possible_answers  # Import the function
-from app.models import UserConversation
-from app.mongodb import update_conversation
+from app.packages.models import UserConversation
+from app.packages.mongodb import update_conversation
 from app.openai_resolvers.openai_client import client
 
 

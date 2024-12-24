@@ -1,14 +1,14 @@
 import hashlib
 import logging
 from fastapi import HTTPException
-from app.models import AnalayzeRequest, AnalyzeQuery
+from app.packages.models import AnalayzeRequest, AnalyzeQuery
 from app.openai_resolvers.keyword_extraction import (
     create_prompt_for_single_sentence, 
     create_prompts_for_multiple_sentences, 
     fetch_keywords_from_api, 
     fetch_keywords_from_api_only_one
 )
-from app.mongodb import (
+from app.packages.mongodb import (
     get_analyze, 
     get_conversation_by_id,
     store_keywords, 

@@ -11,7 +11,7 @@ from pymongo.results import UpdateResult
 from dotenv import load_dotenv
 from bson import ObjectId
 
-from app.models import Analyze, AnalyzeQuery, SimpleConversationQuery, UserConversation, UserConversationQuery
+from app.packages.models import Analyze, AnalyzeQuery, SimpleConversationQuery, UserConversation, UserConversationQuery
 from app.type import Conversation
 
 

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from app.models import AnalayzeRequest, GPTRequest, UserConversationRequest, UserIdRequest
+from app.packages.models import AnalayzeRequest, GPTRequest, UserConversationRequest, UserIdRequest
 from app.resolvers import (
     get_all_questions_resolver, 
     get_question_resolver, 
