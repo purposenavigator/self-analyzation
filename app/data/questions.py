@@ -1,4 +1,3 @@
-from fastapi import HTTPException
 
 questions = {
     "Test": "What is your favorite color?",

@@ -1,5 +1,6 @@
 from fastapi import HTTPException
-from app import questions
+
+from app.data import questions
 
 async def get_all_questions_resolver():
     return [{"id": str(i), "title": k, "explanation": v} for i, (k, v) in enumerate(questions.questions.items(), 1)]

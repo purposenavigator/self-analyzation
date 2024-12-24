@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from app import questions
+from app.data import questions
 from app.type import SystemRoles
 from app.openai_resolvers.keyword_extraction import adviser_prompts
 from app.exceptions import InvalidTopicException
