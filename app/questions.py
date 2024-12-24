@@ -1,10 +1,5 @@
 from fastapi import HTTPException
 
-from app.type import SystemRoles
-from app.openai_resolvers.keyword_extraction import adviser_prompts
-
-
-
 questions = {
     "Test": "What is your favorite color?",
     "Inspiration": "Who is someone that stimulates you when you meet them? What about them stimulates you? Does it relate to your values?",
@@ -17,24 +12,6 @@ questions = {
     "Reflection": "(Imagine you are 80 years old and fill in the blanks) I spent too much time on □□□. I hardly spent any time on □□□. If I could turn back time, I would like to spend my time on □□□. What does that reveal about your values?"
 }
 
-def create_question_system_role(primary_question: str):
-    return f"You are an assistant that asks questions to guide the user to reflect on their values. The question is the first question:'{primary_question}'"
-
-def create_summary_system_role(primary_question: str):
-    return f"You are an assistant that summarizes the user's responses to the question: '{primary_question}'"
-
-#"Add the following styles to the HTML elements:\n"
-#'- Add `style="display: block; margin-bottom: 0.5rem; font-size: 1.25rem; line-height: 1.75rem;"` to the `<p>` tag for the paragraph.\n'
-#'- Add `style="display: block; font-size: 1.25rem; line-height: 1.75rem;"` to each `<li>` tag in the ordered list.\n\n'
-#"This prompt guides the AI to produce the desired format in HTML while focusing on values analysis and integrating specific tags for structure."
-
-def create_answers_system_role(primary_question: str):
-    text = (
-        f"You are an assistant that generates several possible answers which the user might answer to the question: '{primary_question}'.\n"
-        "Express the answers as json objects. Please add title and answer\n"
-    )
-    return text
-
 def prompt_for_possible_answers(next_question: str, previous_answers: str):
     text = (
         f"Imagine you are the user and you are answering the question: '{next_question}'.\n"
@@ -42,28 +19,3 @@ def prompt_for_possible_answers(next_question: str, previous_answers: str):
         "Generate several possible answers to the question based on the user's previous responses.\n"
     )
     return text
-
-def check_topic(topic: str):
-    if topic not in questions:
-        raise HTTPException(status_code=500, detail=f"Invalid topic: {topic}")
-
-def get_system_role(topic: str) -> SystemRoles:
-    check_topic(topic)
-    question = questions[topic]
-    summary_role_content = create_summary_system_role(question)
-    question_role_content = create_question_system_role(question)
-    answer_role_content = create_answers_system_role(question)
-
-
-    summary_role = {"role": "system", "content": summary_role_content}
-    question_role = {"role": "system", "content": question_role_content}
-    analyze_role = {"role": "system", "content": adviser_prompts}
-    answer_role = {"role": "system", "content": answer_role_content}
-
-    system_roles = {
-        "summary": summary_role,
-        "question": question_role,
-        "analyze": analyze_role,
-        "answers": answer_role
-    }
-    return system_roles
