@@ -2,7 +2,7 @@ from fastapi import HTTPException, logger
 from app.questions import prompt_for_possible_answers  # Import the function
 from app.models import UserConversation
 from app.mongodb import update_conversation
-from app.openai_client import client
+from app.openai_resolvers.openai_client import client
 
 
 async def generate_responses(user_conversation: UserConversation):

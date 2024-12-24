@@ -116,7 +116,7 @@ Discovery, Accuracy, Achievement, Adventure, Charm, Power, Influence, Autonomy, 
 """
 
 from typing import List, Dict
-from app.openai_client import client
+from app.openai_resolvers.openai_client import client
 
 PROMPT_TEMPLATE = """
 Extract only the keywords that represent the most important traits, values, or actions of the subject from the following text. Show only the keywords, without additional context or sentences. The output should be a list of keywords separated by commas.
