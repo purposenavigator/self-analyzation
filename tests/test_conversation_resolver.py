@@ -6,14 +6,13 @@ from fastapi import HTTPException
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-
-from app.models import GPTRequest, UserConversation
-from app.resolvers import  process_conversation
+from app.packages.models import GPTRequest, UserConversation
+from app.services.conversation_services import process_conversation
 
 
 @pytest.mark.asyncio
-@patch('app.resolvers.get_conversation', new_callable=AsyncMock)
-@patch('app.resolvers.get_system_role')
+@patch('app.services.conversation_services.get_conversation', new_callable=AsyncMock)
+@patch('app.services.conversation_services.get_system_role')
 async def test_process_conversation_init_success(get_system_role_mock, get_conversation_mock):
     get_system_role_mock.return_value = {
         'question': {'role': 'system', 'content': 'some test question'}, 

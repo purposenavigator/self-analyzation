@@ -11,7 +11,7 @@ from pymongo.results import UpdateResult
 from dotenv import load_dotenv
 from bson import ObjectId
 
-from app.models import Analyze, AnalyzeQuery, SimpleConversationQuery, UserConversation, UserConversationQuery
+from app.packages.models import Analyze, AnalyzeQuery, SimpleConversationQuery, UserConversation, UserConversationQuery
 from app.type import Conversation
 
 
@@ -166,6 +166,42 @@ async def create_conversation(user_conversation: UserConversation):
         logger.error(f"Error creating conversation for user_id {user_conversation.user_id}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error while creating conversation.")
 
+async def update_or_append_field_by_id(conversation_id: str, field_name: str, key: str, value: any):
+    """
+    Updates or appends a field in a conversation document.
+    For nested objects, it updates/adds the key-value pair within that field.
+    
+    Args:
+        conversation_id (str): The ID of the conversation
+        field_name (str): Name of the field to update
+        key (str): Key to update/add within the field
+        value (any): Value to set for the key
+        
+    Returns:
+        UpdateResult: The result of the update operation
+    """
+    try:
+        update_result = await collection.update_one(
+            {"_id": ObjectId(conversation_id)},
+            {
+                "$set": {
+                    f"{field_name}.{key}": value
+                }
+            },
+            upsert=True
+        )
+
+        if update_result.modified_count > 0 or update_result.upserted_id:
+            logger.info(f"Successfully updated {field_name}.{key} for conversation {conversation_id}")
+        else:
+            logger.warning(f"No changes made to {field_name}.{key} for conversation {conversation_id}")
+
+        return update_result
+
+    except Exception as e:
+        logger.error(f"Error updating {field_name} for conversation {conversation_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error updating {field_name}")
+
 async def update_conversation(user_conversation: UserConversation):
     user_id = user_conversation.user_id
     conversation_id = user_conversation.conversation_id
@@ -270,3 +306,31 @@ async def fetch_user_data_from_db(user_id: int):
     except Exception as e:
         logger.error(f"Database error fetching data for user_id {user_id}: {e}")
         raise
+
+async def get_analysis_summary_by_sha(conversation_id: str, sha256_hash: str):
+    """
+    Retrieves the analysis summary for a given SHA hash from a conversation.
+    
+    Args:
+        conversation_id (str): The ID of the conversation
+        sha256_hash (str): The SHA-256 hash of the content
+        
+    Returns:
+        str | None: The analysis summary if found, None otherwise
+    """
+    try:
+        conversation = await collection.find_one(
+            {
+                "_id": ObjectId(conversation_id),
+                f"analysis_summaries.{sha256_hash}": {"$exists": True}
+            },
+            {f"analysis_summaries.{sha256_hash}": 1}
+        )
+        
+        if conversation and "analysis_summaries" in conversation:
+            return conversation["analysis_summaries"].get(sha256_hash)
+        return None
+        
+    except Exception as e:
+        logger.error(f"Error fetching analysis summary for conversation {conversation_id}: {e}")
+        raise HTTPException(status_code=500, detail="Error fetching analysis summary")

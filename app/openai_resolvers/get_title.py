@@ -1,5 +1,5 @@
 
-from app.openai_client import client
+from app.openai_resolvers.openai_client import client
 
 system_prompt = {
     "role": "system",

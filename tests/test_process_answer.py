@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import AsyncMock, patch
-from app.models import GPTRequest, UserConversation
+from app.packages.models import GPTRequest, UserConversation
 from app.resolvers import process_answer_and_generate_followup_resolver
 from datetime import datetime, timezone
 from fastapi import HTTPException

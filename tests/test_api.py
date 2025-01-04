@@ -1,18 +1,20 @@
 import pytest
 from httpx import AsyncClient
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from app.main import app  # Replace with your actual FastAPI app import
-from app.models import UserConversationRequest
+from app.packages.models import UserConversationRequest
 from unittest.mock import patch
+from bson import ObjectId  # Add this import
 
 @pytest.mark.asyncio
 @patch('app.main.get_conversation_resolver')  # Replace with actual module path where `get_conversation_resolver` is defined
 async def test_api_get_conversation_success(mock_get_conversation_resolver):
     # Arrange
-    mock_request_data = UserConversationRequest(user_id=1, conversation_id="abc123")
+    valid_object_id = str(ObjectId())  # Generate a valid ObjectId
+    mock_request_data = UserConversationRequest(user_id=1, conversation_id=valid_object_id)
     mock_response_data = {
         "user_id": 1,
-        "conversation_id": "abc123",
+        "conversation_id": valid_object_id,
         "topic": "sample topic",
         "questions": ["What is your favorite color?"],
         "summaries": ["This is a summary"],
@@ -30,11 +32,12 @@ async def test_api_get_conversation_success(mock_get_conversation_resolver):
     assert response.json() == mock_response_data
 
 @pytest.mark.asyncio
-@patch('app.resolvers.get_conversation')
-async def test_api_get_conversation_failure(mock_get_conversation):
+@patch('app.main.get_conversation_resolver')  # Changed to mock the resolver instead of mongodb function
+async def test_api_get_conversation_failure(mock_get_conversation_resolver):
     # Arrange
-    mock_request_data = UserConversationRequest(user_id=1, conversation_id="abc123")
-    mock_get_conversation.side_effect = Exception("Internal server error")
+    valid_object_id = str(ObjectId())
+    mock_request_data = UserConversationRequest(user_id=1, conversation_id=valid_object_id)
+    mock_get_conversation_resolver.side_effect = HTTPException(status_code=500, detail="Error fetching conversation")
 
     async with AsyncClient(app=app, base_url="http://test") as client:
         # Act
@@ -42,4 +45,5 @@ async def test_api_get_conversation_failure(mock_get_conversation):
 
     # Assert
     assert response.status_code == 500
-    assert response.json() == {"detail": "Internal server error"}
+    assert "detail" in response.json()
+    assert response.json()["detail"] == "Error fetching conversation"

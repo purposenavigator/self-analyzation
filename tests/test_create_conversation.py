@@ -6,8 +6,8 @@ from fastapi import HTTPException
 from datetime import datetime, timezone
 from bson import ObjectId
 
-from app.models import UserConversation
-from app.mongodb import create_conversation
+from app.packages.models import UserConversation
+from app.packages.mongodb import create_conversation
 
 @pytest.fixture
 def mock_db():

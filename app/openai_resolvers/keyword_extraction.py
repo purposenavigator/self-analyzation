@@ -102,12 +102,9 @@ attributes = [
 ]
 
 adviser_prompts = """
-Analyze the following individual's priorities and values based on their actions and context. Below is a list of attributes. Based on the information provided, determine which attributes align with the individual's authentic values. The text should be structured with a paragraph introducing the analysis, followed by an ordered list explaining how each attribute applies to them. Use 'p' tags for the introduction and 'ol', 'li', and 'strong' tags for the list. use 'strong' tag to emphasize the attribute. Here are the attributes to consider: Discovery, Accuracy, Achievement, Adventure, Charm, Power, Influence, Autonomy, Beauty, Victory, Challenge, Change, Comfort, Commitment, Compassion, Resistance, Helpfulness, Courtesy, Creation, Trust, Responsibility, Harmony, Excitement, Honesty, Fame, Family, Fitness, Flexibility, Forgiveness, Friendship, Fun, Generosity, Belief, Religion, Growth, Health, Cooperation, Honesty, Hope, Humility, Humor, Independence, Diligence, Peace, Intimacy, Fairness, Knowledge, Leisure, Being loved, Love, Mastery, Present, Moderation, Devotion, Rebellion, Helpfulness, Openness, Order, Passion, Joy, Popularity, Purpose, Rationality, Reality, Responsibility, Risk, Romance, Security, Acceptance, Self-control, Autonomy, Self-awareness, Devotion, Sexuality, Minimalism, Solitude, Spirituality, Stability, Tolerance, Tradition, Virtue, Wealth, Peace, Fulfillment, Truth, Dignity, Authenticity, Immersion, Effort, Conviction, Freedom, Expression, Oneness, Ingenuity, Professionalism, Flexibility, Leisure, Overcoming, Fellowship, Simplicity, etc."
+Analyze the following individual's priorities and values based on their actions and context. Below is a list of attributes. Based on the information provided, determine which attributes align with the individual's authentic values. The text should be structured with a paragraph summarizing the result of the analysis, followed by an ordered list explaining how each attribute applies to them. After the explanation, include a tag (high, medium, or low) with a percentage indicating the relevance of the attribute to the individual. form ist the following, {tag: percentage}. The label decides how the value is relevant to the sentence which you analyze. The form of the list following: {number}. attribute - explanation - label. Please saparate by hyphen. Do not add conclusion sentences.
 
-Add style="display: block; margin-bottom: 0.5rem; font-size: 1.25rem; line-height: 1.75rem;" to the <p> tag for the paragraph.
-Add style="display: block; font-size: 1.25rem; line-height: 1.75rem;" to each <li> tag in the ordered list.
-
-This prompt guides the AI to produce the desired format in HTML, but do not use Markup, focusing on values analysis while integrating specific tags for structure.
+Here are the attributes to consider: Discovery, Accuracy, Achievement, Adventure, Charm, Power, Influence, Autonomy, Beauty, Victory, Challenge, Change, Comfort, Commitment, Compassion, Resistance, Helpfulness, Courtesy, Creation, Trust, Responsibility, Harmony, Excitement, Honesty, Fame, Family, Fitness, Flexibility, Forgiveness, Friendship, Fun, Generosity, Belief, Religion, Growth, Health, Cooperation, Honesty, Hope, Humility, Humor, Independence, Diligence, Peace, Intimacy, Fairness, Knowledge, Leisure, Being loved, Love, Mastery, Present, Moderation, Devotion, Rebellion, Helpfulness, Openness, Order, Passion, Joy, Popularity, Purpose, Rationality, Reality, Responsibility, Risk, Romance, Security, Acceptance, Self-control, Autonomy, Self-awareness, Devotion, Sexuality, Minimalism, Solitude, Spirituality, Stability, Tolerance, Tradition, Virtue, Wealth, Peace, Fulfillment, Truth, Dignity, Authenticity, Immersion, Effort, Conviction, Freedom, Expression, Oneness, Ingenuity, Professionalism, Flexibility, Leisure, Overcoming, Fellowship, Simplicity, etc."
 """
 
 analyze_prompts = """
@@ -119,7 +116,7 @@ Discovery, Accuracy, Achievement, Adventure, Charm, Power, Influence, Autonomy, 
 """
 
 from typing import List, Dict
-from app.openai_client import client
+from app.openai_resolvers.openai_client import client
 
 PROMPT_TEMPLATE = """
 Extract only the keywords that represent the most important traits, values, or actions of the subject from the following text. Show only the keywords, without additional context or sentences. The output should be a list of keywords separated by commas.
@@ -154,7 +151,7 @@ def create_prompt_for_single_sentence(sentence: str) -> List[Dict[str, str]]:
         List[Dict[str, str]]: A list of role-based prompts for the chat API.
     """
     return [
-        {"role": "system", "content": PROMPT_TEMPLATE},
+        {"role": "system", "content": adviser_prompts},
         {"role": "user", "content": sentence}
     ]
 

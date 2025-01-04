@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch, AsyncMock
 from bson import ObjectId
 from fastapi import HTTPException
-from app.mongodb import get_conversation, SimpleConversationQuery, UserConversation
+from app.packages.mongodb import get_conversation, SimpleConversationQuery, UserConversation
 
 @pytest.mark.asyncio
 @patch('app.mongodb.get_conversation_by_id')

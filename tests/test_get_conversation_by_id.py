@@ -2,7 +2,7 @@ import pytest
 from bson import ObjectId
 from unittest.mock import AsyncMock, patch
 
-from app.mongodb import get_conversation_by_id
+from app.packages.mongodb import get_conversation_by_id
 
 @pytest.mark.asyncio
 async def test_get_conversation_by_id_success():
