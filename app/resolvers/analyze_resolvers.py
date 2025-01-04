@@ -109,6 +109,7 @@ async def get_analyze_resolver(conversation_id: str):
         
         return analysis_summary
         
+        
     except Exception as error:
         logger.error(f"Error in get_analyze_resolver: {error}")
         raise HTTPException(status_code=500, detail="Internal server error while fetching data.")
