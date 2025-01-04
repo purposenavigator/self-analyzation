@@ -1,4 +1,3 @@
-
 questions = {
     "Test": "What is your favorite color?",
     "Inspiration": "Who is someone that stimulates you when you meet them? What about them stimulates you? Does it relate to your values?",
