@@ -1,4 +1,3 @@
-
 class InvalidTopicException(Exception):
     def __init__(self, topic: str):
         self.topic = topic
