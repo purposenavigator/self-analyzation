@@ -1,53 +1,30 @@
 # mongodb.py
-import os
-import logging
 from datetime import datetime, timezone
 from typing import List
 from fastapi import HTTPException
-from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.errors import DuplicateKeyError
 from pymongo import ReturnDocument
 from pymongo.results import UpdateResult
-from dotenv import load_dotenv
 from bson import ObjectId
 
 from app.packages.models.conversation_models import Analyze, AnalyzeQuery, SimpleConversationQuery, UserConversation, UserConversationQuery
 from app.type import Conversation
+from app.packages.database import conversation_collection
 
-
-load_dotenv()
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-mongo_client = AsyncIOMotorClient(os.getenv("MONGODB_URI"))
-db = mongo_client.get_database(os.getenv("MONGODB_DB_NAME"))
-collection = db.get_collection("conversations")
-
-async def initialize_counter(sequence_name: str):
-    try:
-        await db.counters.update_one(
-            {"_id": sequence_name},
-            {"$setOnInsert": {"seq": 0}},
-            upsert=True
-        )
-    except Exception as e:
-        logger.error(f"Error initializing counter for {sequence_name}: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error while initializing counter.")
 
 async def get_conversation_by_id(conversation_id):
     """
-    Fetches a conversation document from the MongoDB collection by its ID.
+    Fetches a conversation document from the MongoDB conversation_collection by its ID.
 
     Parameters:
-    - collection: The MongoDB collection object.
+    - conversation_collection: The MongoDB conversation_collection object.
     - conversation_id: The ID of the conversation as a string.
 
     Returns:
     - The conversation document or None if not found.
     """
     try:
-        conversation = await collection.find_one({"_id": ObjectId(conversation_id)})
+        conversation = await conversation_collection.find_one({"_id": ObjectId(conversation_id)})
         return conversation
     except Exception as e:
         raise Exception(f"An error occurred while fetching the conversation: {e}")
@@ -155,7 +132,7 @@ async def create_conversation(user_conversation: UserConversation):
         conversation_data = {k: v for k, v in conversation_data.items() if v is not None}
 
         # Insert the new document
-        result = await collection.insert_one(conversation_data)
+        result = await conversation_collection.insert_one(conversation_data)
 
         if result.inserted_id:
             return str(result.inserted_id)
@@ -181,7 +158,7 @@ async def update_or_append_field_by_id(conversation_id: str, field_name: str, ke
         UpdateResult: The result of the update operation
     """
     try:
-        update_result = await collection.update_one(
+        update_result = await conversation_collection.update_one(
             {"_id": ObjectId(conversation_id)},
             {
                 "$set": {
@@ -232,7 +209,7 @@ async def update_conversation(user_conversation: UserConversation):
     update_data = {k: v for k, v in update_data.items() if v is not None}
 
     try:
-        result: UpdateResult = await collection.update_one(
+        result: UpdateResult = await conversation_collection.update_one(
             {"_id": ObjectId(conversation_id)},
             {"$set": update_data},
             upsert=True
@@ -240,7 +217,7 @@ async def update_conversation(user_conversation: UserConversation):
         if result.upserted_id:
             return str(result.upserted_id)
         else:
-            existing_document = await collection.find_one(
+            existing_document = await conversation_collection.find_one(
                 {"_id": ObjectId(conversation_id)},
             )
             return str(existing_document["_id"])
@@ -250,7 +227,7 @@ async def update_conversation(user_conversation: UserConversation):
 
 async def store_keywords(conversation_id: str, keywords: List[str]):
     try:
-        result: UpdateResult = await collection.update_one(
+        result: UpdateResult = await conversation_collection.update_one(
             { "_id": ObjectId(conversation_id)},
             {"$set": {
                 "keywords": keywords
@@ -260,7 +237,7 @@ async def store_keywords(conversation_id: str, keywords: List[str]):
         if result.upserted_id:
             return str(result.upserted_id)
         else:
-            existing_document = await collection.find_one(
+            existing_document = await conversation_collection.find_one(
                 { "_id": ObjectId(conversation_id)},
             )
             return str(existing_document["_id"])
@@ -292,7 +269,7 @@ async def fetch_user_data_from_db(user_id: int):
     and have 'questions' and 'summaries' attributes.
     """
     try:
-        user_data = await collection.find({
+        user_data = await conversation_collection.find({
             "user_id": user_id,
             "questions": { "$exists": True, "$ne": [] },
             "summaries": { "$exists": True, "$ne": [] }
@@ -319,7 +296,7 @@ async def get_analysis_summary_by_sha(conversation_id: str, sha256_hash: str):
         str | None: The analysis summary if found, None otherwise
     """
     try:
-        conversation = await collection.find_one(
+        conversation = await conversation_collection.find_one(
             {
                 "_id": ObjectId(conversation_id),
                 f"analysis_summaries.{sha256_hash}": {"$exists": True}
