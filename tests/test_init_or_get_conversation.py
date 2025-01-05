@@ -3,7 +3,7 @@ from unittest.mock import patch, AsyncMock
 from fastapi import HTTPException
 from bson import ObjectId
 
-from app.packages.models import UserConversation, UserConversationQuery
+from app.packages.models.conversation_models import UserConversation, UserConversationQuery
 from app.packages.mongodb import init_or_get_conversation
 
 # Assuming these imports are available in your project

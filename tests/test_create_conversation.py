@@ -6,7 +6,7 @@ from fastapi import HTTPException
 from datetime import datetime, timezone
 from bson import ObjectId
 
-from app.packages.models import UserConversation
+from app.packages.models.conversation_models import UserConversation
 from app.packages.mongodb import create_conversation
 
 @pytest.fixture

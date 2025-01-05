@@ -2,7 +2,7 @@ import pytest
 from httpx import AsyncClient
 from fastapi import FastAPI, HTTPException
 from app.main import app  # Replace with your actual FastAPI app import
-from app.packages.models import UserConversationRequest
+from app.packages.models.conversation_models import UserConversationRequest
 from unittest.mock import patch
 from bson import ObjectId  # Add this import
 

@@ -1,7 +1,7 @@
 import hashlib
 import logging
 from fastapi import HTTPException
-from app.packages.models import AnalayzeRequest, AnalyzeQuery
+from app.packages.models.conversation_models import AnalayzeRequest, AnalyzeQuery
 from app.openai_resolvers.keyword_extraction import (
     create_prompt_for_single_sentence, 
     create_prompts_for_multiple_sentences, 
