@@ -12,6 +12,8 @@ from app.resolvers import (
     get_all_user_conversations_resolver, 
     process_answer_and_generate_followup_resolver
 )
+from app.resolvers.user_resolvers import register, login
+from app.packages.schemas.user_schema import UserCreate, UserLogin
 
 load_dotenv()
 
@@ -28,6 +30,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# User routes
+@app.post("/register")
+async def api_register(user: UserCreate):
+    return await register(user)
+
+@app.post("/login")
+async def api_login(user: UserLogin):
+    return await login(user)
 
 # Conversation routes
 @app.post("/conversation")

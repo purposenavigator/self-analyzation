@@ -9,7 +9,7 @@ from bson import ObjectId
 
 from app.packages.models.conversation_models import Analyze, AnalyzeQuery, SimpleConversationQuery, UserConversation, UserConversationQuery
 from app.type import Conversation
-from app.packages.database import conversation_collection
+from app.packages.database import conversation_collection, logger
 
 
 async def get_conversation_by_id(conversation_id):
