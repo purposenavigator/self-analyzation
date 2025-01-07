@@ -1,7 +1,13 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Response, Request
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from app.packages.models.conversation_models import AnalayzeRequest, GPTRequest, UserConversationRequest, UserIdRequest
+from app.packages.models.conversation_models import (
+    AnalayzeRequest, 
+    GPTRequest, 
+    UserConversationRequest, 
+    UserIdRequest
+)
+from app.packages.repositories.user.auth import get_current_user
 from app.resolvers import (
     get_all_questions_resolver, 
     get_question_resolver, 
@@ -12,7 +18,7 @@ from app.resolvers import (
     get_all_user_conversations_resolver, 
     process_answer_and_generate_followup_resolver
 )
-from app.resolvers.user_resolvers import register, login
+from app.resolvers.user_resolvers import register, login, logout
 from app.packages.schemas.user_schema import UserCreate, UserLogin
 
 load_dotenv()
@@ -33,12 +39,20 @@ app.add_middleware(
 
 # User routes
 @app.post("/register")
-async def api_register(user: UserCreate):
-    return await register(user)
+async def api_register(user: UserCreate, response: Response):
+    return await register(user, response)
 
 @app.post("/login")
-async def api_login(user: UserLogin):
-    return await login(user)
+async def api_login(user: UserLogin, response: Response):
+    return await login(user, response)
+
+@app.post("/logout")
+async def api_logout(response: Response):
+    return await logout(response)
+
+@app.get("/current_user")
+async def api_get_current_user(request: Request):
+    return await get_current_user(request)
 
 # Conversation routes
 @app.post("/conversation")

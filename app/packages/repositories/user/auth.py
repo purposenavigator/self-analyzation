@@ -1,19 +1,29 @@
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
-from utils import decode_access_token
+from fastapi import Depends, HTTPException, status, Request
+from jose import jwt, JWTError
 from app.packages.database import users_collection
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+SECRET_KEY = "your_secret_key"
+ALGORITHM = "HS256"
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
-    payload = decode_access_token(token)
-    if payload is None:
+async def get_current_user(request: Request):
+    token = request.cookies.get("access_token")
+    if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
+            detail="Not authenticated",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    user = await users_collection.find_one({"username": payload.get("sub")})
+    
+    try:
+        payload = jwt.decode(token.split(" ")[1], SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    # Fetch user from the database
+    user = await users_collection.find_one({"username": username})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
