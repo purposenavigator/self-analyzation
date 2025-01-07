@@ -1,8 +1,7 @@
 from bson.objectid import ObjectId
-from typing import List, Optional, Union
-from database import users_collection
-from models import User
-from schemas.user_schema import UserCreate
+from typing import List, Optional
+from app.packages.database import users_collection
+from app.packages.schemas.user_schema import UserCreate
 
 # Utility function to convert ObjectId to string
 def objectid_to_str(obj_id: ObjectId) -> str:
