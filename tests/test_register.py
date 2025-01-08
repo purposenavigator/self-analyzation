@@ -47,3 +47,4 @@ async def test_register_existing_user(mock_get_user, existing_user):
     
     assert exc_info.value.status_code == 400
     assert exc_info.value.detail == "Username already taken"
+    
