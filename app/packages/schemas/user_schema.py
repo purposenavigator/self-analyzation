@@ -13,5 +13,5 @@ class UserResponse(BaseModel):
     is_active: bool
     is_admin: bool
 
-    class Config:
+    class ConfigDict:
         orm_mode = True
