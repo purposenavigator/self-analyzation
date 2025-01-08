@@ -8,42 +8,52 @@ from app.packages.repositories.user.utils import hash_password, verify_password,
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 async def register(user: UserCreate, response: Response):
-    existing_user = await get_user(user.username)
-    if (existing_user):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username already taken"
+    try:
+        existing_user = await get_user(user.username)
+        if (existing_user):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Username already taken"
+            )
+        user.password = hash_password(user.password)
+        await create_user(user)
+        
+        access_token = create_access_token(data={"sub": user.username})
+        response.set_cookie(
+            key="access_token",
+            value=f"Bearer {access_token}",
+            httponly=True,
+            secure=True,
+            samesite="lax"
         )
-    user.password = hash_password(user.password)
-    new_user = await create_user(user)
-    
-    access_token = create_access_token(data={"sub": user.username})
-    response.set_cookie(
-        key="access_token",
-        value=f"Bearer {access_token}",
-        httponly=True,
-        secure=True,
-        samesite="lax"
-    )
-    
-    return new_user
+        
+        return {"username": user.username}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 async def login(user: UserLogin, response: Response):
-    db_user = await get_user(user.username)
-    if not db_user or not verify_password(user.password, db_user["hashed_password"]):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    
-    access_token = create_access_token(data={"sub": user["username"]})
-
-    response.set_cookie(
-        key="access_token",
-        value=f"Bearer {access_token}",
-        httponly=True,
-        secure=True,
-        samesite="lax"
-    )
-    return db_user
+    try:
+        db_user = await get_user(user.username)
+        if not db_user or not verify_password(user.password, db_user["hashed_password"]):
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+        access_token = create_access_token(data={"sub": user.username})
+        response.set_cookie(
+            key="access_token",
+            value=f"Bearer {access_token}",
+            httponly=True,
+            secure=True,
+            samesite="lax"
+        )
+        return {"username": user.username}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 async def logout(response: Response):
-    response.delete_cookie(key="access_token")
-    return {"message": "Logged out successfully"}
+    try:
+        response.delete_cookie(key="access_token")
+        return {"message": "Logged out successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
