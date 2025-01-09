@@ -28,4 +28,10 @@ jobs:
           echo "34.45.225.35 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGhrofi+ibNzyt5h8AAhaqdi9qU+Xtt9DxpGUwZhTNR/" >> ~/.ssh/known_hosts
           ssh root@34.45.225.35 <<EOF
             date > iwashere
+            screen -ls | grep -q '\.api\s' && screen -S api -X quit
+            screen -ls | grep -q '\.api\s' && screen -S api -X kill
+            cd self-analyzation
+            GIT_SSH_COMMAND="ssh -i /root/.ssh/id_rsa" git pull
+            cd ..
+            screen -dmS api bash -c 'source saw/bin/activate; cd self-analyzation; pip install -r requirements.txt; uvicorn app.main:app --reload'
           EOF
