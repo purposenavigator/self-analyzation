@@ -48,6 +48,8 @@ async def login(user: UserLogin, response: Response):
             samesite="lax"
         )
         return {"username": user.username}
+    except HTTPException as e:
+        raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
