@@ -1,6 +1,7 @@
 from fastapi import Depends, HTTPException, status, Request
 from jose import jwt, JWTError
 from app.packages.database import users_collection
+from app.packages.repositories.user.repository import get_user
 
 SECRET_KEY = "your_secret_key"
 ALGORITHM = "HS256"
@@ -23,7 +24,7 @@ async def get_current_user(request: Request):
         raise HTTPException(status_code=401, detail="Invalid token")
 
     # Fetch user from the database
-    user = await users_collection.find_one({"username": username})
+    user = await get_user(username)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return user
+    return {"username": user["username"], "id": user["_id"]}

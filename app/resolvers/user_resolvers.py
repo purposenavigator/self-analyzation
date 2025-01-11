@@ -10,13 +10,13 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 async def register(user: UserCreate, response: Response):
     try:
         existing_user = await get_user(user.username)
-        if (existing_user):
+        if existing_user:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Username already taken"
             )
         user.password = hash_password(user.password)
-        await create_user(user)
+        new_user = await create_user(user)
         
         access_token = create_access_token(data={"sub": user.username})
         response.set_cookie(
@@ -27,7 +27,7 @@ async def register(user: UserCreate, response: Response):
             samesite="lax"
         )
         
-        return {"username": user.username}
+        return {"username": new_user["username"], "id": new_user["_id"]}
     except HTTPException as e:
         raise e
     except Exception as e:
@@ -47,7 +47,7 @@ async def login(user: UserLogin, response: Response):
             secure=True,
             samesite="lax"
         )
-        return {"username": user.username}
+        return {"username": db_user["username"], "id": db_user["_id"]}
     except HTTPException as e:
         raise e
     except Exception as e:
