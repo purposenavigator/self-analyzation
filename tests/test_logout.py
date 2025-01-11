@@ -18,8 +18,8 @@ async def test_login_and_logout(
         mock_get_user, 
         valid_user
     ):
-    # Mocking the login process
-    mock_get_user.return_value = {"username": valid_user.username, "hashed_password": "hashed_password"}
+    # Mocking the login p
+    mock_get_user.return_value = {"username": valid_user.username, "hashed_password": "hashed_password", "_id": "123"}
     mock_verify_password.return_value = True
     mock_create_access_token.return_value = "fake_token"
     

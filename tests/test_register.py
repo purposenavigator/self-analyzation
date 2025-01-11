@@ -25,7 +25,7 @@ async def test_register_new_user(
         new_user
     ):
     mock_get_user.return_value = None
-    mock_create_user.return_value = {"username": new_user.username}
+    mock_create_user.return_value = {"username": new_user.username, "_id": "123"}
     mock_create_access_token.return_value = "fake_token"
     mock_hash_password.return_value = "hashed_password"
     
@@ -33,13 +33,14 @@ async def test_register_new_user(
     result = await register(new_user, response)
     
     assert result["username"] == new_user.username
+    assert result["id"] == "123"
     set_cookie_header = response.headers["set-cookie"]
     assert 'access_token="Bearer fake_token"; HttpOnly; Path=/; SameSite=lax; Secure' in set_cookie_header
 
 @patch("app.resolvers.user_resolvers.get_user")
 @pytest.mark.asyncio
 async def test_register_existing_user(mock_get_user, existing_user):
-    mock_get_user.return_value = {"username": existing_user.username}
+    mock_get_user.return_value = {"username": existing_user.username, "hashed_password": "hashed_password", "_id": "123"}
     
     response = Response()
     with pytest.raises(HTTPException) as exc_info:

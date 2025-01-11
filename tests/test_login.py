@@ -22,7 +22,7 @@ async def test_login_valid_user(
         mock_get_user, 
         valid_user
     ):
-    mock_get_user.return_value = {"username": valid_user.username, "hashed_password": "hashed_password"}
+    mock_get_user.return_value = {"username": valid_user.username, "hashed_password": "hashed_password", "_id": "123"}
     mock_verify_password.return_value = True
     mock_create_access_token.return_value = "fake_token"
     
@@ -30,6 +30,7 @@ async def test_login_valid_user(
     result = await login(valid_user, response)
     
     assert result["username"] == valid_user.username
+    assert result["id"] == "123"
     set_cookie_header = response.headers["set-cookie"]
     assert 'access_token="Bearer fake_token"; HttpOnly; Path=/; SameSite=lax; Secure' in set_cookie_header
 
@@ -52,7 +53,7 @@ async def test_login_invalid_user(mock_verify_password, mock_get_user, invalid_u
 @pytest.mark.asyncio
 async def test_login_correct_username_incorrect_password(mock_verify_password, mock_get_user):
     user = UserLogin(username="validuser", password="wrongpassword")
-    mock_get_user.return_value = {"username": user.username, "hashed_password": "hashed_password"}
+    mock_get_user.return_value = {"username": user.username, "hashed_password": "hashed_password", "_id": "123"}
     mock_verify_password.return_value = False
     
     response = Response()
