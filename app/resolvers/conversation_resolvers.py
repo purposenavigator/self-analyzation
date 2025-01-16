@@ -1,6 +1,6 @@
 import logging
 from fastapi import HTTPException
-from app.packages.models import UserConversation, UserConversationRequest, SimpleConversationQuery, UserIdRequest, GPTRequest
+from app.packages.models.conversation_models import UserConversation, UserConversationRequest, SimpleConversationQuery, UserIdRequest, GPTRequest
 from app.packages.mongodb import get_conversation, fetch_user_data_from_db, update_conversation
 from app.services.conversation_services import process_conversation
 from app.openai_resolvers.get_title import get_title

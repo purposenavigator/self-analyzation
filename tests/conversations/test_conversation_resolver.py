@@ -6,7 +6,7 @@ from fastapi import HTTPException
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from app.packages.models import GPTRequest, UserConversation
+from app.packages.models.conversation_models import GPTRequest, UserConversation
 from app.services.conversation_services import process_conversation
 
 

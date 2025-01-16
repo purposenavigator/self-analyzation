@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from app.packages.models import GPTRequest, UserConversation, UserConversationQuery
+from app.packages.models.conversation_models import GPTRequest, UserConversation, UserConversationQuery
 from app.packages.mongodb import init_or_get_conversation, create_conversation
 from app.services.get_system_role import get_system_role
 import logging
