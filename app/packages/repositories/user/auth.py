@@ -2,9 +2,13 @@ from fastapi import Depends, HTTPException, status, Request
 from jose import jwt, JWTError
 from app.packages.database import users_collection
 from app.packages.repositories.user.repository import get_user
+from dotenv import load_dotenv
+import os
 
-SECRET_KEY = "your_secret_key"
-ALGORITHM = "HS256"
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
 
 async def get_current_user(request: Request):
     token = request.cookies.get("access_token")
