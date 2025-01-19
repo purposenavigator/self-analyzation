@@ -24,7 +24,7 @@ async def register(user: UserCreate, response: Response):
             key="access_token",
             value=f"Bearer {access_token}",
             httponly=True,
-            secure=True,
+            secure=False,
             samesite="lax"
         )
         print(response.headers)
@@ -47,7 +47,7 @@ async def login(user: UserLogin, response: Response):
             key="access_token",
             value=f"Bearer {access_token}",
             httponly=True,
-            secure=True,
+            secure=False,
             samesite="lax"
         )
         print(response.headers)
