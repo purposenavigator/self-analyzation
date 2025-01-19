@@ -19,6 +19,7 @@ async def register(user: UserCreate, response: Response):
         new_user = await create_user(user)
         
         access_token = create_access_token(data={"sub": user.username})
+        print(access_token)
         response.set_cookie(
             key="access_token",
             value=f"Bearer {access_token}",
@@ -26,6 +27,7 @@ async def register(user: UserCreate, response: Response):
             secure=True,
             samesite="lax"
         )
+        print(response.headers)
         
         return {"username": new_user["username"], "id": new_user["_id"]}
     except HTTPException as e:

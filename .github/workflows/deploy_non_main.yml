@@ -1,6 +1,9 @@
 name: deploy_non_main
 
 on:
+  push:
+    branches:
+      - bind-all-ip-address
   workflow_dispatch:
 
 jobs:
