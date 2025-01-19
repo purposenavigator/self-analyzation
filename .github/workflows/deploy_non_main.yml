@@ -1,9 +1,7 @@
-name: deploy
+name: deploy_non_main
 
 on:
-  push:
-    branches:
-      - "**"
+  workflow_dispatch:
 
 jobs:
   deploy:
