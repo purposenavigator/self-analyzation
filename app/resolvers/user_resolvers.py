@@ -42,6 +42,7 @@ async def login(user: UserLogin, response: Response):
             raise HTTPException(status_code=401, detail="Invalid credentials")
         
         access_token = create_access_token(data={"sub": user.username})
+        print(access_token)
         response.set_cookie(
             key="access_token",
             value=f"Bearer {access_token}",
@@ -49,6 +50,7 @@ async def login(user: UserLogin, response: Response):
             secure=True,
             samesite="lax"
         )
+        print(response.headers)
         return {"username": db_user["username"], "id": db_user["_id"]}
     except HTTPException as e:
         raise e
