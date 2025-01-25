@@ -19,15 +19,13 @@ async def register(user: UserCreate, response: Response):
         new_user = await create_user(user)
         
         access_token = create_access_token(data={"sub": user.username})
-        print(access_token)
         response.set_cookie(
             key="access_token",
             value=f"Bearer {access_token}",
             httponly=True,
-            secure=False,
+            secure=False,  # Temporarily set to False, will be True after the server runs on HTTPS
             samesite="lax"
         )
-        print(response.headers)
         
         return {"username": new_user["username"], "id": new_user["_id"]}
     except HTTPException as e:
@@ -42,15 +40,13 @@ async def login(user: UserLogin, response: Response):
             raise HTTPException(status_code=401, detail="Invalid credentials")
         
         access_token = create_access_token(data={"sub": user.username})
-        print(access_token)
         response.set_cookie(
             key="access_token",
             value=f"Bearer {access_token}",
             httponly=True,
-            secure=False,
+            secure=False,  # Temporarily set to False, will be True after the server runs on HTTPS
             samesite="lax"
         )
-        print(response.headers)
         return {"username": db_user["username"], "id": db_user["_id"]}
     except HTTPException as e:
         raise e
