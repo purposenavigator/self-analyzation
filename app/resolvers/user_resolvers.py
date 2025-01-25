@@ -23,7 +23,7 @@ async def register(user: UserCreate, response: Response):
             key="access_token",
             value=f"Bearer {access_token}",
             httponly=True,
-            secure=True,
+            secure=False,  # Temporarily set to False, will be True after the server runs on HTTPS
             samesite="lax"
         )
         
@@ -44,7 +44,7 @@ async def login(user: UserLogin, response: Response):
             key="access_token",
             value=f"Bearer {access_token}",
             httponly=True,
-            secure=True,
+            secure=False,  # Temporarily set to False, will be True after the server runs on HTTPS
             samesite="lax"
         )
         return {"username": db_user["username"], "id": db_user["_id"]}
