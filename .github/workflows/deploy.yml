@@ -31,7 +31,7 @@ jobs:
             screen -ls | grep -q '\.api\s' && screen -S api -X quit
             screen -ls | grep -q '\.api\s' && screen -S api -X kill
             cd self-analyzation
-            GIT_SSH_COMMAND="ssh -i /root/.ssh/id_rsa" git pull
+            GIT_SSH_COMMAND="ssh -i /root/.ssh/id_rsa" git pull origin $branch
             cd ..
             screen -dmS api bash -c 'source saw/bin/activate; cd self-analyzation; pip install -r requirements.txt; uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload'
           EOF
