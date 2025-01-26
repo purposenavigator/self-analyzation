@@ -18,6 +18,7 @@ from app.resolvers import (
     get_all_user_conversations_resolver, 
     process_answer_and_generate_followup_resolver
 )
+from app.resolvers.conversation_resolvers import get_all_values_for_user_resolver
 from app.resolvers.user_resolvers import register, login, logout
 from app.packages.schemas.user_schema import UserCreate, UserLogin
 
@@ -67,6 +68,10 @@ async def api_get_conversation(request: UserConversationRequest, current_user: d
 @app.post("/user_conversations")
 async def get_user_data(user_request: UserIdRequest, current_user: dict = Depends(get_current_user)):
     return await get_all_user_conversations_resolver(user_request)
+
+@app.post("/user_all_values")
+async def get_all_values_for_user(user_request: UserIdRequest, current_user: dict = Depends(get_current_user)):
+    return await get_all_values_for_user_resolver(user_request)
 
 # Question routes
 @app.get("/questions")

@@ -12,7 +12,7 @@ from app.type import Conversation
 from app.packages.database import conversation_collection, logger
 
 
-async def get_conversation_by_id(conversation_id):
+async def get_conversation_by_id(conversation_id) -> Conversation:
     """
     Fetches a conversation document from the MongoDB conversation_collection by its ID.
 
