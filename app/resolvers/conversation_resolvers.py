@@ -68,29 +68,3 @@ async def process_answer_and_generate_followup_resolver(request: GPTRequest):
     except Exception as e:
         logger.error(f"Error in process_answer_and_generate_followup_resolver for request {request}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-async def get_all_values_for_user_resolver(user_request: UserIdRequest):
-    """
-    Retrieves all analysis summaries belonging to a specific user by first getting all conversation IDs
-    and then retrieving the values using those IDs. Ignores conversations without analysis summaries.
-    """
-    try:
-        user_data = await fetch_user_data_from_db(user_request.user_id)
-        
-        if not user_data:
-            raise ValueError(f"No data found for user_id {user_request.user_id}")
-        
-        all_analysis_summaries = []
-        for conversation in user_data:
-            conversation_id = conversation["_id"]
-            user_conversation = await get_conversation_by_id(conversation_id)
-            if user_conversation and "analysis_summaries" in user_conversation:
-                all_analysis_summaries.append(user_conversation["analysis_summaries"])
-        
-        return all_analysis_summaries
-    except ValueError as ve:
-        logger.warning(ve)
-        raise HTTPException(status_code=404, detail=str(ve))
-    except Exception as e:
-        logger.error(f"Resolver error: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error while fetching data.")

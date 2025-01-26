@@ -18,7 +18,7 @@ from app.resolvers import (
     get_all_user_conversations_resolver, 
     process_answer_and_generate_followup_resolver
 )
-from app.resolvers.conversation_resolvers import get_all_values_for_user_resolver
+from app.resolvers.analyze_resolvers import get_all_values_for_user_resolver  # Update import
 from app.resolvers.user_resolvers import register, login, logout
 from app.packages.schemas.user_schema import UserCreate, UserLogin
 
