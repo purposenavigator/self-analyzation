@@ -9,7 +9,7 @@ async def get_all_questions_resolver():
     ]
 
 async def get_question_resolver(topic: str):
-    if topic in questions.questions:
-        return {"title": topic, "explanation": questions.questions[topic]}
+    if topic in questions:
+        return {"title": topic, "explanation": questions[topic]}
     else:
         raise HTTPException(status_code=404, detail=f"Topic '{topic}' not found.")
