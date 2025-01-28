@@ -141,8 +141,8 @@ async def get_all_values_for_user_resolver(user_request: UserIdRequest):
     try:
         user_data = await fetch_user_data_from_db(user_request.user_id)
         
-        if not user_data:
-            raise ValueError(f"No data found for user_id {user_request.user_id}")
+        if not len(user_data):
+            return []
         
         all_analysis_summaries = await extract_analysis_summaries(user_data)
         

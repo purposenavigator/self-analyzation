@@ -275,6 +275,9 @@ async def fetch_user_data_from_db(user_id: int):
             "summaries": { "$exists": True, "$ne": [] }
         }).to_list(length=None)
     
+        if not user_data or len(user_data) == 0:
+            return []
+    
         for document in user_data:
             if "_id" in document:
                 document["_id"] = str(document["_id"])  # Convert ObjectId to string
@@ -282,7 +285,7 @@ async def fetch_user_data_from_db(user_id: int):
         return user_data
     except Exception as e:
         logger.error(f"Database error fetching data for user_id {user_id}: {e}")
-        raise
+        raise HTTPException(status_code=500, detail="Internal server error while fetching data.")
 
 async def get_analysis_summary_by_sha(conversation_id: str, sha256_hash: str):
     """
