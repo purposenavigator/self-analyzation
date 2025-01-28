@@ -5,7 +5,6 @@ from app.packages.models.conversation_models import (
     AnalayzeRequest, 
     GPTRequest, 
     UserConversationRequest, 
-    UserIdRequest
 )
 from app.packages.repositories.user.auth import get_current_user
 from app.resolvers import (
@@ -58,15 +57,15 @@ async def api_get_current_user(request: Request):
 # Conversation routes
 @app.post("/conversation")
 async def api_process_answer_and_generate_followup_resolver(request: GPTRequest, current_user: dict = Depends(get_current_user)):
-    return await process_answer_and_generate_followup_resolver(request)
+    return await process_answer_and_generate_followup_resolver(request, str(current_user['id']))
 
 @app.post("/get_conversation")
 async def api_get_conversation(request: UserConversationRequest, current_user: dict = Depends(get_current_user)):
-    return await get_conversation_resolver(request)
+    return await get_conversation_resolver(request, str(current_user['id']))
 
 @app.post("/user_conversations")
-async def get_user_data(user_request: UserIdRequest, current_user: dict = Depends(get_current_user)):
-    return await get_all_user_conversations_resolver(user_request)
+async def get_user_data(current_user: dict = Depends(get_current_user)):
+    return await get_all_user_conversations_resolver(str(current_user['id']))
 
 # Question routes
 @app.get("/questions")
