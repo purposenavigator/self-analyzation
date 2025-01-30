@@ -69,8 +69,8 @@ async def get_user_data(current_user: dict = Depends(get_current_user)):
     return await get_all_user_conversations_resolver(str(current_user['id']))
 
 @app.post("/user_all_values")
-async def get_all_values_for_user(user_request: UserIdRequest, current_user: dict = Depends(get_current_user)):
-    return await get_all_values_for_user_resolver(user_request)
+async def get_all_values_for_user(current_user: dict = Depends(get_current_user)):
+    return await get_all_values_for_user_resolver(str(current_user['id']))
 
 # Question routes
 @app.get("/questions")

@@ -133,13 +133,13 @@ async def extract_analysis_summaries(user_data):
             all_analysis_summaries.append(user_conversation["analysis_summaries"])
     return all_analysis_summaries
 
-async def get_all_values_for_user_resolver(user_request: UserIdRequest):
+async def get_all_values_for_user_resolver(user_id: str):
     """
     Retrieves all analysis summaries belonging to a specific user by first getting all conversation IDs
     and then retrieving the values using those IDs. Ignores conversations without analysis summaries.
     """
     try:
-        user_data = await fetch_user_data_from_db(user_request.user_id)
+        user_data = await fetch_user_data_from_db(user_id)
         
         if not len(user_data):
             return []
