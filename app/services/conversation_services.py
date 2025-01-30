@@ -6,7 +6,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-async def process_conversation(request: GPTRequest) -> UserConversation:
+async def process_conversation(request: GPTRequest, user_id: str) -> UserConversation:
     try:
         topic = request.topic
         system_roles = get_system_role(topic)
@@ -14,7 +14,7 @@ async def process_conversation(request: GPTRequest) -> UserConversation:
 
         query = UserConversationQuery(
             conversation_id=first_conversation_id,
-            user_id=request.user_id,
+            user_id=user_id,
             topic=topic,
         )
 
