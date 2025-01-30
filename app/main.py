@@ -5,7 +5,7 @@ from app.packages.models.conversation_models import (
     AnalayzeRequest, 
     GPTRequest, 
     UserConversationRequest, 
-    UserIdRequest
+    #UserIdRequest
 )
 from app.packages.repositories.user.auth import get_current_user
 from app.resolvers import (
