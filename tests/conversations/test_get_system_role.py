@@ -2,11 +2,10 @@ from unittest.mock import patch
 from fastapi import HTTPException
 import pytest
 
-from app import questions
-from app.questions import get_system_role
+from app.services.get_system_role import get_system_role
 
 @patch('app.questions.questions', {"Test": "some test"})
-@patch('app.questions.adviser_prompts', "some test advisor")
+@patch('app.questions.adviser_prompts', {"Test": "some test advisor"})
 @patch('app.questions.create_summary_system_role')
 @patch('app.questions.create_question_system_role')
 def test_get_system_role(mock_create_question_system_role, mock_create_summary_system_role):
