@@ -1,6 +1,5 @@
-
 from typing import NotRequired
-from typing import TypedDict, List
+from typing import TypedDict, List, Dict
 from bson import ObjectId
 
 class Message(TypedDict):
@@ -21,6 +20,7 @@ class Conversation(TypedDict):
     status: NotRequired[str]
     is_favorite: NotRequired[bool]
     deleted_at: NotRequired[str]
+    analysis_summaries: NotRequired[Dict[str, str]]
 
 class SystemRole(TypedDict):
     role: str
