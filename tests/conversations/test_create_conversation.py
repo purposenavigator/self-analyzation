@@ -28,6 +28,7 @@ def user_conversation():
         topic="Testing create_conversation",
         summaries=["summary 1"],
         questions=["question 1"],
+        answers=["answer 1"],
         analyze=["analyze 1"],
         title="Conversation Title",
         created_at=datetime.now(timezone.utc),
