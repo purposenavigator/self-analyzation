@@ -1,30 +1,31 @@
-
 from app.packages.mongodb import update_or_append_field_by_id
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, patch
+from bson import ObjectId
 
-# Replace 'your_module' with the actual module name where your function is located
 
 @pytest.mark.asyncio
-@patch("app.mongodb.collection")
+@patch("app.packages.database.conversation_collection", new_callable=AsyncMock)
 async def test_update_or_append_field_by_id(mock_collection):
     # Mock the return value of update_one
-    mock_update_result = MagicMock(matched_count=1, modified_count=1)
+    mock_update_result = AsyncMock(matched_count=1, modified_count=1)
     mock_collection.update_one.return_value = mock_update_result
     
-    conversation_id = "fake_conversation_id"
+    conversation_id = str(ObjectId())  # Use a valid ObjectId
     field_name = "test_field"
-    new_object = {"some_key": "some_value"}
+    key = "some_key"
+    value = "some_value"
 
-    # Call the async function
-    await update_or_append_field_by_id(conversation_id, field_name, new_object)
+    # Patch the function to use the mocked collection
+    with patch("app.packages.mongodb.conversation_collection", mock_collection):
+        # Call the async function
+        await update_or_append_field_by_id(conversation_id, field_name, key, value)
 
     # Verify update_one was called with the correct arguments
     mock_collection.update_one.assert_called_once_with(
-        {"conversation_id": conversation_id},
+        {"_id": ObjectId(conversation_id)},
         {
-            "$setOnInsert": {field_name: []},
-            "$push": {field_name: new_object}
+            "$set": {f"{field_name}.{key}": value}
         },
         upsert=True
     )
