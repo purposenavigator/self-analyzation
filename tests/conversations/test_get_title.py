@@ -46,7 +46,7 @@ async_mock_response = AsyncMockResponse(choices=[AsyncMockChoice(message=AsyncMo
 # Test `create_client_role` function
 def test_create_client_role():
     expected_output = {
-        "role": "client",
+        "role": "user",
         "content": "This project focuses on creating a better user interface. It should be user-friendly and accessible. The design should also reflect modern aesthetics."
     }
     assert create_client_role(mock_sentences) == expected_output
@@ -63,14 +63,14 @@ async def test_ask_title():
         response = await ask_title(mock_sentences)
         assert response == mock_response
         mock_create.assert_called_once_with(
-            model="gpt-3.5-turbo",
+            model="gpt-4o-mini",
             messages=[
                 {
                     "role": "system",
                     "content": "You are a title generation assistant. Your task is to read through a set of sentences provided by the user and create a concise, compelling, and relevant title that captures the main theme or purpose of the sentences. Ensure that the title is engaging and aligns with the content, using language that is clear and impactful. Avoid using overly complex or ambiguous words, and aim for a length of no more than 8-10 words unless otherwise specified."
                 },
                 {
-                    "role": "client",
+                    "role": "user",
                     "content": "This project focuses on creating a better user interface. It should be user-friendly and accessible. The design should also reflect modern aesthetics."
                 }
             ]
