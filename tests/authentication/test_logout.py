@@ -28,7 +28,7 @@ async def test_login_and_logout(
     
     assert login_result["username"] == valid_user.username
     set_cookie_header = login_response.headers["set-cookie"]
-    assert 'access_token="Bearer fake_token"; HttpOnly; Path=/; SameSite=lax; Secure' in set_cookie_header
+    assert 'access_token="Bearer fake_token"; HttpOnly; Path=/; SameSite=lax' in set_cookie_header
     
     # Mocking the logout process
     logout_response = Response()

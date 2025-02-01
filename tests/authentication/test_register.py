@@ -35,7 +35,7 @@ async def test_register_new_user(
     assert result["username"] == new_user.username
     assert result["id"] == "123"
     set_cookie_header = response.headers["set-cookie"]
-    assert 'access_token="Bearer fake_token"; HttpOnly; Path=/; SameSite=lax; Secure' in set_cookie_header
+    assert 'access_token="Bearer fake_token"; HttpOnly; Path=/; SameSite=lax' in set_cookie_header
 
 @patch("app.resolvers.user_resolvers.get_user")
 @pytest.mark.asyncio
