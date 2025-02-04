@@ -16,6 +16,7 @@ from app.packages.mongodb import (
     get_analysis_summary_by_sha,
     fetch_user_data_from_db
 )
+from app.services.analyze_service import get_attribute_and_explanation_object_array
 
 logger = logging.getLogger(__name__)
 
@@ -93,23 +94,28 @@ async def get_analyze_resolver(conversation_id: str):
         existing_summary = await get_analysis_summary_by_sha(conversation_id, sha256_hash)
         
         if (existing_summary):
-            return existing_summary
+            return existing_summary["analysis_summary_text"]
             
         # If no existing summary, generate new one
         prompts = create_prompt_for_single_sentence(summaries_content)
         api_response = await fetch_keywords_from_api_only_one(prompts)
-        analysis_summary = api_response.choices[0].message.content.strip()
+        analysis_summary_text = api_response.choices[0].message.content.strip()
+        analyzed_values = get_attribute_and_explanation_object_array(analysis_summary_text)
+        
+        value_object = {
+            "analysis_summary_text": analysis_summary_text,
+            "analyzed_values": analyzed_values
+        }
         
         # Store the new analysis summary
         await update_or_append_field_by_id(
             conversation_id=conversation_id,
             field_name="analysis_summaries",
             key=sha256_hash,
-            value=analysis_summary
+            value=value_object
         )
         
-        return analysis_summary
-        
+        return value_object["analysis_summary_text"]
         
     except Exception as error:
         logger.error(f"Error in get_analyze_resolver: {error}")
