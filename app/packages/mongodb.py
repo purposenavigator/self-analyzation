@@ -37,7 +37,7 @@ async def get_conversation(query: SimpleConversationQuery) -> UserConversation:
         conversation: Conversation | None = await get_conversation_by_id(conversation_id)
         if not conversation:
             return None
-        user_conversation = UserConversation(
+        user_conversation = Conversation(
             user_id=user_id,
             conversation_id=conversation_id,
             topic=conversation['topic'],

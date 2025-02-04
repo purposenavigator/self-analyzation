@@ -94,7 +94,7 @@ async def get_analyze_resolver(conversation_id: str):
         existing_summary = await get_analysis_summary_by_sha(conversation_id, sha256_hash)
         
         if (existing_summary):
-            return existing_summary["analysis_summary_text"]
+            return existing_summary
             
         # If no existing summary, generate new one
         prompts = create_prompt_for_single_sentence(summaries_content)
@@ -115,7 +115,7 @@ async def get_analyze_resolver(conversation_id: str):
             value=value_object
         )
         
-        return value_object["analysis_summary_text"]
+        return value_object
         
     except Exception as error:
         logger.error(f"Error in get_analyze_resolver: {error}")
