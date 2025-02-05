@@ -136,7 +136,8 @@ async def extract_analysis_summaries(user_data):
         conversation_id = conversation["_id"]
         user_conversation = await get_conversation_by_id(conversation_id)
         if user_conversation and "analysis_summaries" in user_conversation:
-            all_analysis_summaries.append(user_conversation["analysis_summaries"])
+            last_key_value_object = list(user_conversation["analysis_summaries"].values())[-1]
+            all_analysis_summaries.append(last_key_value_object)
     return all_analysis_summaries
 
 async def get_all_values_for_user_resolver(user_id: str):
