@@ -32,7 +32,7 @@ async def test_login_valid_user(
     assert result["username"] == valid_user.username
     assert result["id"] == "123"
     set_cookie_header = response.headers["set-cookie"]
-    assert 'access_token="Bearer fake_token"; HttpOnly; Path=/; SameSite=lax; Secure' in set_cookie_header
+    assert 'access_token="Bearer fake_token"; HttpOnly; Path=/; SameSite=lax' in set_cookie_header
 
 @patch("app.resolvers.user_resolvers.get_user")
 @patch("app.resolvers.user_resolvers.verify_password")

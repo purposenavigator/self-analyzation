@@ -3,6 +3,7 @@ import pytest
 import hashlib
 from unittest.mock import AsyncMock, patch
 from fastapi import HTTPException
+from bson import ObjectId  # Add this import
 
 # Adjust the import to your actual module & function name
 
@@ -14,7 +15,7 @@ async def test_get_analyze_resolver_success():
     and updates the conversation accordingly.
     """
     # Given
-    conversation_id = "test_id"
+    conversation_id = str(ObjectId())  # Convert ObjectId to string
     conversation_data = {
         "summaries": [
             {"role": "assistant", "content": "Assistant content 1"},
@@ -38,9 +39,10 @@ async def test_get_analyze_resolver_success():
     })()
 
     # When
-    with patch("app.resolvers.get_conversation_by_id", new=AsyncMock(return_value=conversation_data)), \
-         patch("app.resolvers.fetch_keywords_from_api_only_one", new=AsyncMock(return_value=mock_api_response)), \
-         patch("app.resolvers.update_or_append_field_by_id", new=AsyncMock()) as mock_update:
+    with patch("app.packages.mongodb.get_conversation_by_id", new=AsyncMock(return_value=conversation_data)), \
+         patch("app.openai_resolvers.keyword_extraction.fetch_keywords_from_api_only_one", new=AsyncMock(return_value=mock_api_response)), \
+         patch("app.packages.mongodb.update_or_append_field_by_id", new=AsyncMock()) as mock_update, \
+         patch("app.packages.mongodb.get_analysis_summary_by_sha", new=AsyncMock(return_value="summary")):
         
         # Call the function
         result = await get_analyze_resolver(conversation_id)
@@ -64,10 +66,10 @@ async def test_get_analyze_resolver_exception():
     if an exception occurs (e.g., when fetching conversation data).
     """
     # Given
-    conversation_id = "test_id"
+    conversation_id = str(ObjectId())  # Convert ObjectId to string
     
     # Simulate an exception during get_conversation_by_id
-    with patch("app.resolvers.get_conversation_by_id", new=AsyncMock(side_effect=Exception("Some error"))):
+    with patch("app.packages.mongodb.get_conversation_by_id", new=AsyncMock(side_effect=Exception("Some error"))):
         # When / Then
         with pytest.raises(HTTPException) as exc_info:
             await get_analyze_resolver(conversation_id)

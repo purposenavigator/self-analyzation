@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from app.packages.mongodb import get_conversation, SimpleConversationQuery, UserConversation
 
 @pytest.mark.asyncio
-@patch('app.mongodb.get_conversation_by_id')
+@patch('app.packages.mongodb.get_conversation_by_id')
 async def test_get_conversation_success(mock_get_conversation_by_id):
     # Arrange
     mock_conversation_id = str(ObjectId())
@@ -34,7 +34,7 @@ async def test_get_conversation_success(mock_get_conversation_by_id):
     assert result.analyze == mock_conversation["analyze"]
 
 @pytest.mark.asyncio
-@patch('app.mongodb.get_conversation_by_id')
+@patch('app.packages.mongodb.get_conversation_by_id')
 async def test_get_conversation_not_found(mock_get_conversation_by_id):
     # Arrange
     mock_conversation_id = str(ObjectId())
@@ -50,7 +50,7 @@ async def test_get_conversation_not_found(mock_get_conversation_by_id):
     assert result is None
 
 @pytest.mark.asyncio
-@patch('app.mongodb.get_conversation_by_id')
+@patch('app.packages.mongodb.get_conversation_by_id')
 async def test_get_conversation_raises_exception(mock_get_conversation_by_id):
     # Arrange
     mock_conversation_id = str(ObjectId())
