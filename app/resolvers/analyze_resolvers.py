@@ -16,7 +16,9 @@ from app.packages.mongodb import (
     get_analysis_summary_by_sha,
     fetch_user_data_from_db
 )
+from app.services.add_new_label import add_new_label
 from app.services.analyze_service import get_attribute_and_explanation_object_array
+from app.services.consolidate_values import consolidate_values
 
 logger = logging.getLogger(__name__)
 
@@ -123,21 +125,25 @@ async def get_analyze_resolver(conversation_id: str):
 
 async def extract_analysis_summaries(user_data):
     """
-    Extracts analysis summaries from user data.
+    Extracts and flattens analysis summaries from user data.
 
     Args:
         user_data (list): List of user conversations.
 
     Returns:
-        list: List of analysis summaries.
+        list: Flattened list of analyzed values from the latest analysis summaries.
     """
     all_analysis_summaries = []
     for conversation in user_data:
         conversation_id = conversation["_id"]
         user_conversation = await get_conversation_by_id(conversation_id)
         if user_conversation and "analysis_summaries" in user_conversation:
-            last_key_value_object = list(user_conversation["analysis_summaries"].values())[-1]
-            all_analysis_summaries.append(last_key_value_object)
+            # Get the last analysis summary object
+            analysis_summaries = list(user_conversation["analysis_summaries"].values())
+            last_summary_object = analysis_summaries[-1]
+            # Extract the 'analyzed_values' from the last summary object
+            analyzed_values = last_summary_object['analyzed_values']
+            all_analysis_summaries.extend(analyzed_values)
     return all_analysis_summaries
 
 async def get_all_values_for_user_resolver(user_id: str):
@@ -146,14 +152,16 @@ async def get_all_values_for_user_resolver(user_id: str):
     and then retrieving the values using those IDs. Ignores conversations without analysis summaries.
     """
     try:
-        user_data = await fetch_user_data_from_db(user_id)
+        user_conversations = await fetch_user_data_from_db(user_id)
         
-        if not len(user_data):
+        if not len(user_conversations):
             return []
         
-        all_analysis_summaries = await extract_analysis_summaries(user_data)
+        flattened_analysis_summaries = await extract_analysis_summaries(user_conversations)
+        consolidated_data = consolidate_values(flattened_analysis_summaries)
+        labeled_data = add_new_label(consolidated_data)
         
-        return all_analysis_summaries
+        return labeled_data
     except ValueError as ve:
         logger.warning(ve)
         raise HTTPException(status_code=404, detail=str(ve))
