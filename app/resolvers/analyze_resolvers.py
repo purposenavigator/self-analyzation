@@ -146,10 +146,20 @@ async def extract_analysis_summaries(user_data):
             all_analysis_summaries.extend(analyzed_values)
     return all_analysis_summaries
 
-async def get_all_values_for_user_resolver(user_id: str):
+async def get_consolidated_and_labeled_values_for_user(user_id: str):
     """
     Retrieves all analysis summaries belonging to a specific user by first getting all conversation IDs
-    and then retrieving the values using those IDs. Ignores conversations without analysis summaries.
+    and then retrieving the values using those IDs. The function consolidates and labels the values
+    before returning them. Ignores conversations without analysis summaries.
+
+    Args:
+        user_id (str): The ID of the user whose analysis summaries are to be retrieved.
+
+    Returns:
+        list: List of consolidated and labeled analysis summaries.
+
+    Raises:
+        HTTPException: If there is an error during data fetching or processing.
     """
     try:
         user_conversations = await fetch_user_data_from_db(user_id)
