@@ -53,28 +53,3 @@ def consolidate_values(data: List[AttributeExplanation]) -> List[ConsolidatedAtt
     sorted_results = sorted(results, key=lambda x: x["relevance_score"], reverse=True)
 
     return sorted_results
-
-# Example usage
-if __name__ == "__main__":
-    # Sample data
-    data = [
-        {"attribute": "1. Growth", "explanation": "Explanation 1", "evaluation": {"label": "high", "percentage": "85%"}},
-        {"attribute": "2. Harmony", "explanation": "Explanation 2", "evaluation": {"label": "medium", "percentage": "75%"}},
-        {"attribute": "3. Life", "explanation": "Explanation 3", "evaluation": {"label": "high", "percentage": "80%"}},
-        {"attribute": "4. Nature", "explanation": "Explanation 4", "evaluation": {"label": "high", "percentage": "90%"}},
-        {"attribute": "5. Connection", "explanation": "Explanation 5", "evaluation": {"label": "medium", "percentage": "70%"}},
-        {"attribute": "1. Growth", "explanation": "Explanation 1", "evaluation": {"label": "high", "percentage": "90%."}},
-        {"attribute": "2. Nature", "explanation": "Explanation 4", "evaluation": {"label": "high", "percentage": "85%."}},
-        {"attribute": "3. Sustainability", "explanation": "Explanation 6", "evaluation": {"label": "high", "percentage": "95%."}},
-        {"attribute": "4. Mindfulness", "explanation": "Explanation 7", "evaluation": {"label": "medium", "percentage": "75%."}},
-        {"attribute": "5. Community", "explanation": "Explanation 8", "evaluation": {"label": "medium", "percentage": "70%."}},
-        {"attribute": "1. Growth", "explanation": "Explanation 1", "evaluation": {"label": "high", "percentage": "90%."}},
-        {"attribute": "2. Authenticity", "explanation": "Explanation 9", "evaluation": {"label": "high", "percentage": "85%."}},
-        {"attribute": "3. Adventure", "explanation": "Explanation 10", "evaluation": {"label": "medium", "percentage": "70%."}},
-        {"attribute": "4. Connection", "explanation": "Explanation 5", "evaluation": {"label": "high", "percentage": "80%."}},
-        {"attribute": "5. Truth", "explanation": "Explanation 11", "evaluation": {"label": "high", "percentage": "85%."}},
-        {"attribute": "6. Stability", "explanation": "Explanation 12", "evaluation": {"label": "medium", "percentage": "65%."}},
-    ]
-
-    result = consolidate_values(data)
-    print(result)
