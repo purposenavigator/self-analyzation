@@ -263,7 +263,7 @@ async def get_next_id(sequence_name: str) -> int:
         logger.error(f"Error fetching next ID for sequence_name {sequence_name}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error while fetching next ID.")
 
-async def fetch_user_data_from_db(user_id: int):
+async def fetch_user_data_from_db(user_id: int) -> List[Conversation]:
     """
     Interacts with the MongoDB database to retrieve all records that contain user_id
     and have 'questions' and 'summaries' attributes.

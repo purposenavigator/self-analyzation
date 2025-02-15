@@ -57,3 +57,23 @@ class SystemRoles(TypedDict):
 
 class Excract(TypedDict):
     extract: SystemRole
+
+class FlattenedAnalysisSummary(TypedDict):
+    attribute: str
+    explanation: str
+    evaluation: Evaluation
+
+class ConsolidatedAttribute(TypedDict):
+    attribute: str
+    explanation: str
+    mean: float
+    count: int
+    relevance_score: float
+
+class LabeledAttribute(TypedDict):
+    attribute: str
+    explanation: str
+    mean: float
+    count: int
+    relevance_score: float
+    label: str

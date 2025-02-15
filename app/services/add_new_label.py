@@ -1,7 +1,8 @@
 import math
-from typing import List, Dict
+from typing import List
+from app.type import LabeledAttribute, ConsolidatedAttribute
 
-def add_new_label(data: List[Dict]) -> List[Dict]:
+def add_new_label(data: List[ConsolidatedAttribute]) -> List[LabeledAttribute]:
     """
     Adds a new label to the data based on dynamic thresholds of relevance scores.
 
@@ -25,7 +26,7 @@ def add_new_label(data: List[Dict]) -> List[Dict]:
     medium_threshold = percentile(relevance_scores, 33)  # Middle 33%
 
     # Assign a new label based on dynamic thresholds
-    classified_data = []
+    classified_data: List[LabeledAttribute] = []
     for item in data:
         if item["relevance_score"] >= high_threshold:
             new_label = "high"

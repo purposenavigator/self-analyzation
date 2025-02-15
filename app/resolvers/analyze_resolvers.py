@@ -1,5 +1,6 @@
 import hashlib
 import logging
+from typing import List
 from fastapi import HTTPException
 from app.packages.models.conversation_models import AnalayzeRequest, AnalyzeQuery
 from app.openai_resolvers.keyword_extraction import (
@@ -19,6 +20,7 @@ from app.packages.mongodb import (
 from app.services.add_new_label import add_new_label
 from app.services.analyze_service import get_attribute_and_explanation_object_array
 from app.services.consolidate_values import consolidate_values
+from app.type import Conversation, FlattenedAnalysisSummary
 
 logger = logging.getLogger(__name__)
 
@@ -123,7 +125,7 @@ async def get_analyze_resolver(conversation_id: str):
         logger.error(f"Error in get_analyze_resolver: {error}")
         raise HTTPException(status_code=500, detail="Internal server error while fetching data.")
 
-async def extract_analysis_summaries(user_data):
+async def extract_analysis_summaries(user_data: List[Conversation]) -> List[FlattenedAnalysisSummary]:
     """
     Extracts and flattens analysis summaries from user data.
 

@@ -1,17 +1,9 @@
 import re
 import math
 from collections import defaultdict
-from typing import List, TypedDict
+from typing import List
+from app.type import ConsolidatedAttribute, AttributeExplanation
 
-from app.services.analyze_service import AttributeExplanation
-
-
-class ConsolidatedAttribute(TypedDict):
-    attribute: str
-    explanation: str
-    mean: float
-    count: int
-    relevance_score: float
 
 def consolidate_values(data: List[AttributeExplanation]) -> List[ConsolidatedAttribute]:
     """
