@@ -20,7 +20,7 @@ from app.packages.mongodb import (
 from app.services.add_new_label import add_new_label
 from app.services.analyze_service import get_attribute_and_explanation_object_array
 from app.services.consolidate_values import consolidate_values
-from app.type import Conversation, FlattenedAnalysisSummary
+from app.type import Conversation, FlattenedAnalysisSummary, LabeledAttribute
 
 logger = logging.getLogger(__name__)
 
@@ -148,7 +148,7 @@ async def extract_analysis_summaries(user_data: List[Conversation]) -> List[Flat
             all_analysis_summaries.extend(analyzed_values)
     return all_analysis_summaries
 
-async def get_consolidated_and_labeled_values_for_user(user_id: str):
+async def get_consolidated_and_labeled_values_for_user(user_id: str) -> List[LabeledAttribute]:
     """
     Retrieves all analysis summaries belonging to a specific user by first getting all conversation IDs
     and then retrieving the values using those IDs. The function consolidates and labels the values
