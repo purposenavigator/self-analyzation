@@ -6,6 +6,7 @@ from app.services.conversation_services import process_conversation
 from app.openai_resolvers.get_title import get_title
 from app.openai_resolvers.generate_responses import generate_responses
 from app.type import Conversation
+from typing import List
 
 logger = logging.getLogger(__name__)
 
@@ -24,10 +25,19 @@ async def get_conversation_resolver(request: UserConversationRequest, user_id: s
         logger.error(f"Error in get_conversation for request {request}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-async def get_all_user_conversations_resolver(user_id: str):
+async def get_all_user_conversations_resolver(user_id: str) -> List[Conversation]:
     """
     Calls the database function and handles the case where no data is found.
     Takes user_id as a parameter.
+
+    Args:
+        user_id (str): The ID of the user whose conversations are to be retrieved.
+
+    Returns:
+        list: List of user conversations.
+
+    Raises:
+        HTTPException: If there is an error during data fetching or processing.
     """
     try:
         user_data = await fetch_user_data_from_db(user_id)

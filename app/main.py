@@ -41,57 +41,70 @@ app.add_middleware(
 # User routes
 @app.post("/register")
 async def api_register(user: UserCreate, response: Response):
+    # Register a new user
     return await register(user, response)
 
 @app.post("/login")
 async def api_login(user: UserLogin, response: Response):
+    # Login an existing user
     return await login(user, response)
 
 @app.post("/logout")
 async def api_logout(response: Response):
+    # Logout the current user
     return await logout(response)
 
 @app.get("/current_user")
 async def api_get_current_user(request: Request):
+    # Get the current logged-in user
     return await get_current_user(request)
 
 # Conversation routes
 @app.post("/conversation")
 async def api_process_answer_and_generate_followup_resolver(request: GPTRequest, current_user: dict = Depends(get_current_user)):
+    # Process an answer and generate a follow-up question
     return await process_answer_and_generate_followup_resolver(request, str(current_user['id']))
 
 @app.post("/get_conversation")
 async def api_get_conversation(request: UserConversationRequest, current_user: dict = Depends(get_current_user)):
+    # Get a specific conversation for the current user
     return await get_conversation_resolver(request, str(current_user['id']))
 
 @app.post("/user_conversations")
 async def get_user_data(current_user: dict = Depends(get_current_user)):
+    # Get all conversations for the current user
     return await get_all_user_conversations_resolver(str(current_user['id']))
 
 @app.post("/user_all_values")
 async def get_all_values_for_user(current_user: dict = Depends(get_current_user)):
+    # Get all consolidated and labeled values for the current user
     return await get_consolidated_and_labeled_values_for_user(str(current_user['id']))
 
 # Question routes
 @app.get("/questions")
 async def get_questions(current_user: dict = Depends(get_current_user)):
+    # Get all questions
     return await get_all_questions_resolver()
 
 @app.get("/question/{topic}")
 async def get_question(topic, current_user: dict = Depends(get_current_user)):
+    # Get a specific question by topic
     return await get_question_resolver(topic)
 
 # Analyze routes
 @app.post("/answer")
 async def api_process_answer(request: AnalayzeRequest, current_user: dict = Depends(get_current_user)):
+    # Process an answer for a given request
     return await process_answer_resolver(request)
 
 @app.post("/retrieve_keywords")
 async def retrieve_keywords(request: AnalayzeRequest, current_user: dict = Depends(get_current_user)):
+    # Retrieve keywords for a given request
     return await process_retrieve_keywords_resolver(request)
 
 @app.get("/analyze/{conversation_id}")
 async def get_analyze(conversation_id: str, current_user: dict = Depends(get_current_user)):
+    # Get analysis for a specific conversation
     return await get_analyze_resolver(conversation_id)
 
 if __name__ == "__main__":
