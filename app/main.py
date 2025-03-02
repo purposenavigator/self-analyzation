@@ -20,6 +20,7 @@ from app.resolvers import (
 from app.resolvers.analyze_resolvers import get_consolidated_and_labeled_values_for_user  # Update import
 from app.resolvers.user_resolvers import register, login, logout
 from app.packages.schemas.user_schema import UserCreate, UserLogin
+from mangum import Mangum  # Add this import
 
 load_dotenv()
 
@@ -110,4 +111,6 @@ async def get_analyze(conversation_id: str, current_user: dict = Depends(get_cur
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+handler = Mangum(app)  # Add this line at the end
 
