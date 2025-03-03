@@ -1,7 +1,7 @@
 from fastapi import HTTPException, logger
-from app.packages.models.conversation_models import UserConversation
 from app.packages.mongodb import update_conversation
 from app.openai_resolvers.openai_client import client
+from app.type import Conversation
 
 
 async def get_ai_response(messages, model="gpt-4o-mini"):
@@ -19,7 +19,7 @@ def prompt_for_possible_answers(next_question: str, previous_answers: str):
     )
     return text
 
-async def generate_responses(user_conversation: UserConversation):
+async def generate_responses(user_conversation: Conversation):
     try:
         ai_question_response = await get_ai_response(user_conversation.questions)
         user_conversation.questions.append({"role": "assistant", "content": ai_question_response})

@@ -1,5 +1,6 @@
 import hashlib
 import logging
+from typing import List
 from fastapi import HTTPException
 from app.packages.models.conversation_models import AnalayzeRequest, AnalyzeQuery
 from app.openai_resolvers.keyword_extraction import (
@@ -16,6 +17,10 @@ from app.packages.mongodb import (
     get_analysis_summary_by_sha,
     fetch_user_data_from_db
 )
+from app.services.add_new_label import add_new_label
+from app.services.analyze_service import get_attribute_and_explanation_object_array
+from app.services.consolidate_values import consolidate_values
+from app.type import Conversation, FlattenedAnalysisSummary, LabeledAttribute
 
 logger = logging.getLogger(__name__)
 
@@ -98,55 +103,77 @@ async def get_analyze_resolver(conversation_id: str):
         # If no existing summary, generate new one
         prompts = create_prompt_for_single_sentence(summaries_content)
         api_response = await fetch_keywords_from_api_only_one(prompts)
-        analysis_summary = api_response.choices[0].message.content.strip()
+        analysis_summary_text = api_response.choices[0].message.content.strip()
+        analyzed_values = get_attribute_and_explanation_object_array(analysis_summary_text)
+        
+        value_object = {
+            "analysis_summary_text": analysis_summary_text,
+            "analyzed_values": analyzed_values
+        }
         
         # Store the new analysis summary
         await update_or_append_field_by_id(
             conversation_id=conversation_id,
             field_name="analysis_summaries",
             key=sha256_hash,
-            value=analysis_summary
+            value=value_object
         )
         
-        return analysis_summary
-        
+        return value_object
         
     except Exception as error:
         logger.error(f"Error in get_analyze_resolver: {error}")
         raise HTTPException(status_code=500, detail="Internal server error while fetching data.")
 
-async def extract_analysis_summaries(user_data):
+async def extract_analysis_summaries(user_data: List[Conversation]) -> List[FlattenedAnalysisSummary]:
     """
-    Extracts analysis summaries from user data.
+    Extracts and flattens analysis summaries from user data.
 
     Args:
         user_data (list): List of user conversations.
 
     Returns:
-        list: List of analysis summaries.
+        list: Flattened list of analyzed values from the latest analysis summaries.
     """
     all_analysis_summaries = []
     for conversation in user_data:
         conversation_id = conversation["_id"]
         user_conversation = await get_conversation_by_id(conversation_id)
         if user_conversation and "analysis_summaries" in user_conversation:
-            all_analysis_summaries.append(user_conversation["analysis_summaries"])
+            # Get the last analysis summary object
+            analysis_summaries = list(user_conversation["analysis_summaries"].values())
+            last_summary_object = analysis_summaries[-1]
+            # Extract the 'analyzed_values' from the last summary object
+            analyzed_values = last_summary_object['analyzed_values']
+            all_analysis_summaries.extend(analyzed_values)
     return all_analysis_summaries
 
-async def get_all_values_for_user_resolver(user_id: str):
+async def get_consolidated_and_labeled_values_for_user(user_id: str) -> List[LabeledAttribute]:
     """
     Retrieves all analysis summaries belonging to a specific user by first getting all conversation IDs
-    and then retrieving the values using those IDs. Ignores conversations without analysis summaries.
+    and then retrieving the values using those IDs. The function consolidates and labels the values
+    before returning them. Ignores conversations without analysis summaries.
+
+    Args:
+        user_id (str): The ID of the user whose analysis summaries are to be retrieved.
+
+    Returns:
+        list: List of consolidated and labeled analysis summaries.
+
+    Raises:
+        HTTPException: If there is an error during data fetching or processing.
     """
     try:
-        user_data = await fetch_user_data_from_db(user_id)
+        user_conversations = await fetch_user_data_from_db(user_id)
         
-        if not len(user_data):
+        if not len(user_conversations):
             return []
         
-        all_analysis_summaries = await extract_analysis_summaries(user_data)
+        flattened_analysis_summaries = await extract_analysis_summaries(user_conversations)
+        consolidated_data = consolidate_values(flattened_analysis_summaries)
+        labeled_data = add_new_label(consolidated_data)
         
-        return all_analysis_summaries
+        return labeled_data
     except ValueError as ve:
         logger.warning(ve)
         raise HTTPException(status_code=404, detail=str(ve))

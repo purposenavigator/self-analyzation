@@ -6,8 +6,9 @@ from fastapi import HTTPException
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from app.packages.models.conversation_models import GPTRequest, UserConversation
+from app.packages.models.conversation_models import GPTRequest
 from app.services.conversation_services import process_conversation
+from app.type import Conversation
 
 
 @pytest.mark.asyncio
@@ -20,7 +21,7 @@ async def test_process_conversation_init_success(mock_get_system_role, mock_get_
         'analyze': {'role': 'system', 'content': 'some test advisor'},
         'answers': {'role': 'system', 'content': 'some test advisor'}
         }
-    mock_get_conversation.return_value = UserConversation(
+    mock_get_conversation.return_value = Conversation(
             user_id="123", 
             conversation_id=None, 
             topic="Test",
@@ -31,12 +32,12 @@ async def test_process_conversation_init_success(mock_get_system_role, mock_get_
         )
 
     request = GPTRequest(conversation_id=None, user_id="123", topic="Test", prompt="Hello, how are you?")
-    user_conversation = await process_conversation(request, user_id="123")
+    conversation = await process_conversation(request, user_id="123")
 
-    assert user_conversation.user_id == "123"
-    assert user_conversation.topic == "Test"
-    assert user_conversation.questions[-1]["content"] == "Hello, how are you?"
-    assert user_conversation.summaries[-1]["content"] == "Hello, how are you?"
+    assert conversation.user_id == "123"
+    assert conversation.topic == "Test"
+    assert conversation.questions[-1]["content"] == "Hello, how are you?"
+    assert conversation.summaries[-1]["content"] == "Hello, how are you?"
 
 @pytest.mark.asyncio
 async def test_process_conversation_invalid_topic():
