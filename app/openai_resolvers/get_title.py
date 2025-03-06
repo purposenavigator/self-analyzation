@@ -1,9 +1,8 @@
-
 from app.openai_resolvers.openai_client import client
 
 system_prompt = {
     "role": "system",
-    "content": "You are a title generation assistant. Your task is to read through a set of sentences provided by the user and create a concise, compelling, and relevant title that captures the main theme or purpose of the sentences. Ensure that the title is engaging and aligns with the content, using language that is clear and impactful. Avoid using overly complex or ambiguous words, and aim for a length of no more than 8-10 words unless otherwise specified."
+    "content": "You are a title generation assistant. Your task is to read through a set of sentences provided by the user and create a concise, compelling, and relevant title that captures the main theme or purpose of the sentences. Ensure that the title is engaging and aligns with the content, using language that is clear and impactful. Avoid using overly complex or ambiguous words, and aim for a length of no more than 8-10 words unless otherwise specified. The title should not contain any double quotes."
 }
 
 def create_client_role(sentences: list[str]) -> dict:

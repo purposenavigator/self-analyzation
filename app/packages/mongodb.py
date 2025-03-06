@@ -7,7 +7,7 @@ from pymongo import ReturnDocument
 from pymongo.results import UpdateResult
 from bson import ObjectId
 
-from app.packages.models.conversation_models import Analyze, AnalyzeQuery, SimpleConversationQuery, UserConversation, UserConversationQuery
+from app.packages.models.conversation_models import Analyze, AnalyzeQuery, SimpleConversationQuery, UserConversationQuery
 from app.type import Conversation
 from app.packages.database import conversation_collection, logger
 
@@ -29,7 +29,7 @@ async def get_conversation_by_id(conversation_id) -> Conversation:
     except Exception as e:
         raise Exception(f"An error occurred while fetching the conversation: {e}")
 
-async def get_conversation(query: SimpleConversationQuery) -> UserConversation:
+async def get_conversation(query: SimpleConversationQuery) -> Conversation:
     user_id = query.user_id
     conversation_id = query.conversation_id
 
@@ -37,7 +37,7 @@ async def get_conversation(query: SimpleConversationQuery) -> UserConversation:
         conversation: Conversation | None = await get_conversation_by_id(conversation_id)
         if not conversation:
             return None
-        user_conversation = UserConversation(
+        user_conversation = Conversation(
             user_id=user_id,
             conversation_id=conversation_id,
             topic=conversation['topic'],
@@ -52,12 +52,12 @@ async def get_conversation(query: SimpleConversationQuery) -> UserConversation:
         raise HTTPException(status_code=500, detail="Internal server error while fetching conversation.")
 
 
-async def init_or_get_conversation(query: UserConversationQuery) -> UserConversation:
+async def init_or_get_conversation(query: UserConversationQuery) -> Conversation:
     user_id = query.user_id
     conversation_id = query.conversation_id
     topic = query.topic
 
-    initialized_conversation = UserConversation(
+    initialized_conversation = Conversation(
                 user_id=user_id, 
                 conversation_id=None, 
                 topic=topic,
@@ -74,7 +74,7 @@ async def init_or_get_conversation(query: UserConversationQuery) -> UserConversa
         conversation: Conversation | None = await get_conversation_by_id(conversation_id)
         if not conversation:
             return initialized_conversation
-        update_conversation = UserConversation(
+        update_conversation = Conversation(
                 user_id=user_id, 
                 conversation_id=conversation_id, 
                 topic=topic,
@@ -108,7 +108,7 @@ async def get_analyze(query: AnalyzeQuery) -> Analyze:
         logger.error(f"Error fetching conversation for user_id {conversation_id}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error while fetching conversation.")
 
-async def create_conversation(user_conversation: UserConversation):
+async def create_conversation(user_conversation: Conversation):
     try:
 
         # Prepare the document to insert
@@ -179,7 +179,7 @@ async def update_or_append_field_by_id(conversation_id: str, field_name: str, ke
         logger.error(f"Error updating {field_name} for conversation {conversation_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Error updating {field_name}")
 
-async def update_conversation(user_conversation: UserConversation):
+async def update_conversation(user_conversation: Conversation):
     user_id = user_conversation.user_id
     conversation_id = user_conversation.conversation_id
     questions = user_conversation.questions
@@ -263,7 +263,7 @@ async def get_next_id(sequence_name: str) -> int:
         logger.error(f"Error fetching next ID for sequence_name {sequence_name}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error while fetching next ID.")
 
-async def fetch_user_data_from_db(user_id: int):
+async def fetch_user_data_from_db(user_id: int) -> List[Conversation]:
     """
     Interacts with the MongoDB database to retrieve all records that contain user_id
     and have 'questions' and 'summaries' attributes.

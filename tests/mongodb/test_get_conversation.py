@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch, AsyncMock
 from bson import ObjectId
 from fastapi import HTTPException
-from app.packages.mongodb import get_conversation, SimpleConversationQuery, UserConversation
+from app.packages.mongodb import get_conversation, SimpleConversationQuery, Conversation
 
 @pytest.mark.asyncio
 @patch('app.packages.mongodb.get_conversation_by_id')
@@ -25,7 +25,7 @@ async def test_get_conversation_success(mock_get_conversation_by_id):
     result = await get_conversation(mock_query)
     
     # Assert
-    assert isinstance(result, UserConversation)
+    assert isinstance(result, Conversation)
     assert result.user_id == mock_user_id
     assert result.conversation_id == mock_conversation_id
     assert result.topic == mock_conversation['topic']

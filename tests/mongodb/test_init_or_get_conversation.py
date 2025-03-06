@@ -3,7 +3,8 @@ from unittest.mock import patch, AsyncMock
 from fastapi import HTTPException
 from bson import ObjectId
 
-from app.packages.models.conversation_models import UserConversation, UserConversationQuery
+from app.type import Conversation
+from app.packages.models.conversation_models import UserConversationQuery
 from app.packages.mongodb import init_or_get_conversation
 
 # Assuming these imports are available in your project
@@ -35,7 +36,7 @@ async def test_init_or_get_conversation_existing():
     with patch("app.packages.mongodb.get_conversation_by_id", AsyncMock(return_value=existing_conversation)):
         result = await init_or_get_conversation(query)
         
-        assert isinstance(result, UserConversation)
+        assert isinstance(result, Conversation)
         assert result.user_id == query.user_id
         assert result.conversation_id == query.conversation_id
         assert result.topic == query.topic
@@ -59,7 +60,7 @@ async def test_init_or_get_conversation_non_existing():
     with patch("app.packages.mongodb.get_conversation_by_id", AsyncMock(return_value=None)):
         result = await init_or_get_conversation(query)
         
-        assert isinstance(result, UserConversation)
+        assert isinstance(result, Conversation)
         assert result.user_id == query.user_id
         assert result.conversation_id == None
         assert result.topic == query.topic
