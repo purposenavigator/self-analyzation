@@ -4,7 +4,8 @@ import logging
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 
-load_dotenv()
+if os.getenv("AWS_SAM_LOCAL"):  # AWS_SAM_LOCAL is set by SAM CLI
+    load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

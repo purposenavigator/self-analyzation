@@ -1,0 +1,8 @@
+version = 0.1
+
+[default.build.parameters]
+skip_pull_image = true
+use_container = false
+cached = true
+parallel = true
+exclude = [".aws-sam-ignore"]

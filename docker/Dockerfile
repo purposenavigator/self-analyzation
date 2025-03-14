@@ -18,8 +18,4 @@ RUN pip install --no-cache-dir --upgrade pip \
 # Copy the app files
 COPY . /app/
 
-# Expose the port FastAPI will run on
-EXPOSE 8000
-
-# Command to run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["main.handler"]

@@ -1,3 +1,4 @@
+import os
 from fastapi import Depends, FastAPI, Response, Request
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
@@ -22,7 +23,8 @@ from app.resolvers.user_resolvers import register, login, logout
 from app.packages.schemas.user_schema import UserCreate, UserLogin
 from mangum import Mangum  # Add this import
 
-load_dotenv()
+if os.getenv("AWS_SAM_LOCAL"):  # AWS_SAM_LOCAL is set by SAM CLI
+    load_dotenv()
 
 app = FastAPI()
 
@@ -38,6 +40,13 @@ app.add_middleware(
     allow_methods=["*"],         # Allow all HTTP methods
     allow_headers=["*"],         # Allow all headers
 )
+
+@app.get("/secrets")
+def get_secrets():
+    return {
+        "TOKEN_ALGORITHM": os.getenv("TOKEN_ALGORITHM")
+    }
+
 
 # User routes
 @app.post("/register")

@@ -1,0 +1,9 @@
+.github/
+.pytest_cache/
+.vscode/
+**/__pycache__/
+docker/
+env/
+.env
+.python-version
+tests/

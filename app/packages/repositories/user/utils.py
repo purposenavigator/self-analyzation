@@ -1,3 +1,4 @@
+import logging
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
@@ -17,7 +18,11 @@ def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        return pwd_context.verify(plain_password, hashed_password)
+    except Exception as e:
+        logging.error(f"Error verifying password: {e}")
+        raise
 
 def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
