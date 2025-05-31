@@ -36,7 +36,10 @@ async def register(user: UserCreate, response: Response):
 async def login(user: UserLogin, response: Response):
     try:
         db_user = await get_user(user.username)
-        if not db_user or not verify_password(user.password, db_user["hashed_password"]):
+        if not db_user:
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+        if not verify_password(user.password, db_user["hashed_password"]):
             raise HTTPException(status_code=401, detail="Invalid credentials")
         
         access_token = create_access_token(data={"sub": user.username})
