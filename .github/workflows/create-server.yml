@@ -10,7 +10,7 @@ on:
       ec2_ami_id:
         description: 'EC2 AMI ID (Verify for your region and OS choice!) e.g., Amazon Linux 2023 AMI ID in us-east-1'
         required: true
-        default: 'ami-0fb00c61c3333944c' # EXAMPLE ONLY: Amazon Linux 2023 - us-east-1 (VERIFY/CHANGE THIS)
+        default: 'ami-0a7d80731ae1b2435' # EXAMPLE ONLY: Amazon Linux 2023 - us-east-1 (VERIFY/CHANGE THIS)
       ec2_instance_type:
         description: 'EC2 Instance Type'
         required: true
