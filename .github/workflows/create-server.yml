@@ -1,35 +1,36 @@
-name: Provision AWS EC2 Infrastructure
+name: create server
 
 on:
   workflow_dispatch: # Allows manual triggering from the Actions tab
     inputs:
       aws_region:
-        description: "AWS Region (e.g., us-east-1)"
+        description: 'AWS Region (e.g., us-east-1)'
         required: true
-        default: "us-east-1"
+        default: 'us-east-1'
       ec2_ami_id:
-        description: "EC2 AMI ID (Verify for your region and OS choice!) e.g., Amazon Linux 2023 AMI ID in us-east-1"
+        description: 'EC2 AMI ID (Verify for your region and OS choice!) e.g., Amazon Linux 2023 AMI ID in us-east-1'
         required: true
-        default: "ami-0fb00c61c3333944c" # EXAMPLE ONLY: Amazon Linux 2023 - us-east-1 (VERIFY/CHANGE THIS)
+        default: 'ami-0fb00c61c3333944c' # EXAMPLE ONLY: Amazon Linux 2023 - us-east-1 (VERIFY/CHANGE THIS)
       ec2_instance_type:
-        description: "EC2 Instance Type"
+        description: 'EC2 Instance Type'
         required: true
-        default: "t2.micro"
+        default: 't2.micro'
       ec2_key_pair_name:
-        description: "EC2 Key Pair Name (MUST exist in the AWS region and you must have the private key)"
+        description: 'EC2 Key Pair Name (MUST exist in the AWS region and you must have the private key)'
         required: true
+        default: 'self-analyzation-key'
       security_group_name:
-        description: "Name for the EC2 Security Group"
+        description: 'Name for the EC2 Security Group'
         required: true
-        default: "my-app-ec2-sg"
+        default: 'my-app-ec2-sg'
       ec2_instance_name_tag:
-        description: "Value for the Name tag of the EC2 instance"
+        description: 'Value for the Name tag of the EC2 instance'
         required: true
-        default: "my-app-instance"
+        default: 'my-app-instance'
       ssh_allowed_cidr:
-        description: "CIDR block allowed for SSH (e.g., your_ip/32). 0.0.0.0/0 is insecure for production."
+        description: 'CIDR block allowed for SSH (e.g., your_ip/32). 0.0.0.0/0 is insecure for production.'
         required: true
-        default: "0.0.0.0/0" # WARNING: Insecure for production. Change to your IP.
+        default: '0.0.0.0/0' # WARNING: Insecure for production. Change to your IP.
 
 jobs:
   provision_infrastructure:
@@ -47,3 +48,154 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ github.event.inputs.aws_region }}
 
+      - name: Verify EC2 Key Pair Existence
+        id: verify_key_pair
+        run: |
+          echo "Verifying EC2 Key Pair: ${{ github.event.inputs.ec2_key_pair_name }}"
+          if aws ec2 describe-key-pairs --key-names "${{ github.event.inputs.ec2_key_pair_name }}" --region "${{ github.event.inputs.aws_region }}" >/dev/null 2>&1; then
+            echo "Key Pair '${{ github.event.inputs.ec2_key_pair_name }}' found."
+          else
+            echo "Error: Key Pair '${{ github.event.inputs.ec2_key_pair_name }}' not found in region '${{ github.event.inputs.aws_region }}'."
+            echo "Please create it in the AWS EC2 console and ensure you have the private key."
+            exit 1
+          fi
+
+      - name: Create Security Group (Idempotent)
+        id: create_sg
+        run: |
+          SG_NAME="${{ github.event.inputs.security_group_name }}"
+          AWS_REGION="${{ github.event.inputs.aws_region }}"
+          SSH_CIDR="${{ github.event.inputs.ssh_allowed_cidr }}"
+
+          # Attempt to get default VPC ID
+          VPC_ID=$(aws ec2 describe-vpcs --filters Name=isDefault,Values=true --query "Vpcs[0].VpcId" --output text --region "$AWS_REGION")
+          if [ "$VPC_ID" == "None" ] || [ -z "$VPC_ID" ]; then
+            echo "Error: Default VPC not found in region $AWS_REGION. This script assumes a default VPC exists."
+            exit 1
+          fi
+          echo "Using Default VPC ID: $VPC_ID"
+
+          # Check if security group already exists by name in the default VPC
+          SG_ID=$(aws ec2 describe-security-groups --filters Name=group-name,Values="$SG_NAME" Name=vpc-id,Values="$VPC_ID" --query "SecurityGroups[0].GroupId" --output text --region "$AWS_REGION")
+
+          if [ "$SG_ID" == "None" ] || [ -z "$SG_ID" ]; then
+            echo "Security group '$SG_NAME' not found. Creating it..."
+            SG_ID=$(aws ec2 create-security-group \
+              --group-name "$SG_NAME" \
+              --description "Security group for My App created by GitHub Actions" \
+              --vpc-id "$VPC_ID" \
+              --query 'GroupId' --output text \
+              --region "$AWS_REGION")
+            echo "Security Group '$SG_NAME' created with ID: $SG_ID."
+
+            echo "Authorizing ingress rules..."
+            # Allow SSH
+            if ! aws ec2 authorize-security-group-ingress --group-id "$SG_ID" --protocol tcp --port 22 --cidr "$SSH_CIDR" --region "$AWS_REGION" 2>/dev/null; then
+              echo "SSH rule for $SSH_CIDR might already exist or failed to add. Check AWS console."
+            else
+              echo "SSH access allowed from $SSH_CIDR."
+            fi
+            # Allow HTTP
+            if ! aws ec2 authorize-security-group-ingress --group-id "$SG_ID" --protocol tcp --port 80 --cidr "0.0.0.0/0" --region "$AWS_REGION" 2>/dev/null; then
+              echo "HTTP rule might already exist or failed to add."
+            else
+              echo "HTTP access allowed from 0.0.0.0/0."
+            fi
+            # Allow HTTPS
+            if ! aws ec2 authorize-security-group-ingress --group-id "$SG_ID" --protocol tcp --port 443 --cidr "0.0.0.0/0" --region "$AWS_REGION" 2>/dev/null; then
+              echo "HTTPS rule might already exist or failed to add."
+            else
+              echo "HTTPS access allowed from 0.0.0.0/0."
+            fi
+          else
+            echo "Security group '$SG_NAME' (ID: $SG_ID) already exists. Using existing."
+            # You could add logic here to verify/update rules if needed
+          fi
+          echo "SECURITY_GROUP_ID=$SG_ID" >> $GITHUB_OUTPUT
+
+      - name: Launch EC2 Instance (Idempotent-ish)
+        id: launch_ec2
+        run: |
+          INSTANCE_NAME_TAG="${{ github.event.inputs.ec2_instance_name_tag }}"
+          AWS_REGION="${{ github.event.inputs.aws_region }}"
+          AMI_ID="${{ github.event.inputs.ec2_ami_id }}"
+          INSTANCE_TYPE="${{ github.event.inputs.ec2_instance_type }}"
+          KEY_NAME="${{ github.event.inputs.ec2_key_pair_name }}"
+          SG_ID="${{ steps.create_sg.outputs.SECURITY_GROUP_ID }}"
+
+          # Check if an instance with the given name tag already exists and is not terminated
+          EXISTING_INSTANCE_ID=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=$INSTANCE_NAME_TAG" "Name=instance-state-name,Values=pending,running,stopping,stopped" \
+            --query "Reservations[*].Instances[*].InstanceId" \
+            --output text --region "$AWS_REGION")
+
+          if [ -n "$EXISTING_INSTANCE_ID" ]; then
+            echo "Instance with tag Name=$INSTANCE_NAME_TAG (ID: $EXISTING_INSTANCE_ID) already exists and is not terminated. Using existing."
+            INSTANCE_ID="$EXISTING_INSTANCE_ID"
+            # Ensure it's running
+            CURRENT_STATE=$(aws ec2 describe-instances --instance-ids "$INSTANCE_ID" --query "Reservations[*].Instances[*].State.Name" --output text --region "$AWS_REGION")
+            if [ "$CURRENT_STATE" != "running" ] && [ "$CURRENT_STATE" != "pending" ]; then
+                echo "Existing instance $INSTANCE_ID is in state $CURRENT_STATE. Attempting to start it..."
+                aws ec2 start-instances --instance-ids "$INSTANCE_ID" --region "$AWS_REGION"
+                aws ec2 wait instance-running --instance-ids "$INSTANCE_ID" --region "$AWS_REGION"
+                echo "Instance $INSTANCE_ID started."
+            fi
+            PUBLIC_IP=$(aws ec2 describe-instances --instance-ids "$INSTANCE_ID" --query "Reservations[*].Instances[*].PublicIpAddress" --output text --region "$AWS_REGION")
+          else
+            echo "Launching new EC2 instance with Name tag: $INSTANCE_NAME_TAG..."
+            # Attempt to get a default subnet ID in the first AZ of the default VPC
+            DEFAULT_VPC_ID=$(aws ec2 describe-vpcs --filters Name=isDefault,Values=true --query "Vpcs[0].VpcId" --output text --region "$AWS_REGION")
+            SUBNET_ID=$(aws ec2 describe-subnets \
+              --filters Name=vpc-id,Values="$DEFAULT_VPC_ID" Name=availability-zone,Values=$(aws ec2 describe-availability-zones --query "AvailabilityZones[0].ZoneName" --output text --region "$AWS_REGION") \
+              --query "Subnets[0].SubnetId" --output text --region "$AWS_REGION" 2>/dev/null)
+
+            LAUNCH_ARGS="--image-id $AMI_ID \
+                         --instance-type $INSTANCE_TYPE \
+                         --key-name $KEY_NAME \
+                         --security-group-ids $SG_ID \
+                         --tag-specifications ResourceType=instance,Tags=[{Key=Name,Value=$INSTANCE_NAME_TAG}] ResourceType=volume,Tags=[{Key=Name,Value=${INSTANCE_NAME_TAG}-volume}] \
+                         --region $AWS_REGION \
+                         --query Instances[0].InstanceId --output text"
+
+            if [ "$SUBNET_ID" != "None" ] && [ -n "$SUBNET_ID" ]; then
+              echo "Using Subnet ID: $SUBNET_ID"
+              LAUNCH_ARGS="$LAUNCH_ARGS --subnet-id $SUBNET_ID"
+            else
+              echo "Warning: Could not automatically determine a specific subnet. EC2 will pick a default subnet in the VPC."
+            fi
+
+            INSTANCE_ID=$(aws ec2 run-instances $LAUNCH_ARGS)
+            echo "Instance ID: $INSTANCE_ID launched."
+            echo "Waiting for instance to be in 'running' state..."
+            aws ec2 wait instance-running --instance-ids "$INSTANCE_ID" --region "$AWS_REGION"
+            echo "Instance is now running."
+            PUBLIC_IP=$(aws ec2 describe-instances --instance-ids "$INSTANCE_ID" --query "Reservations[*].Instances[*].PublicIpAddress" --output text --region "$AWS_REGION")
+          fi
+
+          echo "INSTANCE_ID=$INSTANCE_ID" >> $GITHUB_OUTPUT
+          echo "PUBLIC_IP=$PUBLIC_IP" >> $GITHUB_OUTPUT
+          echo "EC2 Instance ID: $INSTANCE_ID"
+          echo "EC2 Public IP: $PUBLIC_IP"
+
+      - name: Summary
+        if: always() # Run even if previous steps fail to provide context
+        run: |
+          echo "## AWS EC2 Infrastructure Provisioning Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **AWS Region:** ${{ github.event.inputs.aws_region }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **EC2 Instance Name Tag:** ${{ github.event.inputs.ec2_instance_name_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **EC2 Instance ID:** ${{ steps.launch_ec2.outputs.INSTANCE_ID }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **EC2 Public IP:** ${{ steps.launch_ec2.outputs.PUBLIC_IP }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **EC2 Instance Type:** ${{ github.event.inputs.ec2_instance_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **EC2 AMI ID:** ${{ github.event.inputs.ec2_ami_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Security Group Name:** ${{ github.event.inputs.security_group_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Security Group ID:** ${{ steps.create_sg.outputs.SECURITY_GROUP_ID }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **EC2 Key Pair Name:** ${{ github.event.inputs.ec2_key_pair_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **SSH Allowed CIDR:** ${{ github.event.inputs.ssh_allowed_cidr }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ steps.launch_ec2.outputs.PUBLIC_IP }}" ]; then
+            echo "You should be able to connect to the instance (once fully booted) using:" >> $GITHUB_STEP_SUMMARY
+            echo "ssh -i /path/to/your/${{ github.event.inputs.ec2_key_pair_name }}.pem <AMI_DEFAULT_USER>@${{ steps.launch_ec2.outputs.PUBLIC_IP }}" >> $GITHUB_STEP_SUMMARY
+            echo "(Replace <AMI_DEFAULT_USER> with 'ec2-user' for Amazon Linux, 'ubuntu' for Ubuntu, etc., based on your AMI)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Instance IP not available. Check logs for errors." >> $GITHUB_STEP_SUMMARY
+          fi
