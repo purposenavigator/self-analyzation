@@ -1,0 +1,49 @@
+name: Provision AWS EC2 Infrastructure
+
+on:
+  workflow_dispatch: # Allows manual triggering from the Actions tab
+    inputs:
+      aws_region:
+        description: "AWS Region (e.g., us-east-1)"
+        required: true
+        default: "us-east-1"
+      ec2_ami_id:
+        description: "EC2 AMI ID (Verify for your region and OS choice!) e.g., Amazon Linux 2023 AMI ID in us-east-1"
+        required: true
+        default: "ami-0fb00c61c3333944c" # EXAMPLE ONLY: Amazon Linux 2023 - us-east-1 (VERIFY/CHANGE THIS)
+      ec2_instance_type:
+        description: "EC2 Instance Type"
+        required: true
+        default: "t2.micro"
+      ec2_key_pair_name:
+        description: "EC2 Key Pair Name (MUST exist in the AWS region and you must have the private key)"
+        required: true
+      security_group_name:
+        description: "Name for the EC2 Security Group"
+        required: true
+        default: "my-app-ec2-sg"
+      ec2_instance_name_tag:
+        description: "Value for the Name tag of the EC2 instance"
+        required: true
+        default: "my-app-instance"
+      ssh_allowed_cidr:
+        description: "CIDR block allowed for SSH (e.g., your_ip/32). 0.0.0.0/0 is insecure for production."
+        required: true
+        default: "0.0.0.0/0" # WARNING: Insecure for production. Change to your IP.
+
+jobs:
+  provision_infrastructure:
+    runs-on: ubuntu-latest
+    outputs:
+      instance_id: ${{ steps.launch_ec2.outputs.INSTANCE_ID }}
+      public_ip: ${{ steps.launch_ec2.outputs.PUBLIC_IP }}
+      security_group_id: ${{ steps.create_sg.outputs.SECURITY_GROUP_ID }}
+
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ github.event.inputs.aws_region }}
+
